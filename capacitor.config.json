@@ -1,0 +1,6 @@
+{
+	"appId": "io.ionic.starter",
+	"appName": "MailroomWebApp",
+	"webDir": "www",
+	"bundledWebRuntime": false
+}

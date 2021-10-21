@@ -1,0 +1,8 @@
+{
+  "name": "MailroomWebApp",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular",
+  "id": "d1e0d57b"
+}
