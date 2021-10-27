@@ -1,20 +1,16 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
+<div class="signature-pad-tb">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="end">
+      <ion-button color="light" expand="full" [disabled]="isCanvasBlank()" (click)="save()"> Save</ion-button>
+      <ion-button color="light" expand="full" (click)="undo()"> Undo</ion-button>
+      <ion-button color="light" expand="full" (click)="clear()"> Clear</ion-button>
+    </ion-buttons>
     <ion-title>
-      Tab 5
+      Signature Pad
     </ion-title>
   </ion-toolbar>
-</ion-header>
-<ion-toolbar color="primary">
-  <ion-buttons slot="end">
-    <ion-button color="light" expand="full" [disabled]="isCanvasBlank()" (click)="save()"> Save</ion-button>
-    <ion-button color="light" expand="full" (click)="undo()"> Undo</ion-button>
-    <ion-button color="light" expand="full" (click)="clear()"> Clear</ion-button>
-  </ion-buttons>
-  <ion-title>
-    Signature Pad
-  </ion-title>
-</ion-toolbar>
+</div>
+
 
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
@@ -22,10 +18,10 @@
       <ion-title size="large">Tab 5</ion-title>
     </ion-toolbar>
   </ion-header>
+  
   <div class="signature-pad">
-    <div>
+    <div class="signature-pad-cd">
       <canvas class="signature-pad-canvas" #canvas width="900" height="400" style="touch-action: none;"></canvas>
     </div>
   </div>
-  <app-explore-container name="Tab 5 page"></app-explore-container>
 </ion-content>

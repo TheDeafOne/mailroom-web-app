@@ -22,10 +22,11 @@ export class Tab5Page implements OnInit, AfterViewInit {
   onResize(event){
     this.init();
   }
+  
   init() {
     const canvas: any = this.elementRef.nativeElement.querySelector('canvas');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight - 140;
+    canvas.width = window.innerWidth-10;
+    canvas.height = window.innerHeight/2-35;
     if (this.signaturePad) {
       this.signaturePad.clear(); // Clear the pad on init
     }
@@ -33,7 +34,8 @@ export class Tab5Page implements OnInit, AfterViewInit {
   public ngAfterViewInit(): void{
     this.signaturePad = new SignaturePad(this.signaturePadElement.nativeElement);
     this.signaturePad.clear();
-    this.signaturePad.penColor = 'rgb(56,128,255)';
+    // defaults to black, but ionic blue is:
+    // this.signaturePad.penColor = 'rgb(56,128,255)';
   }
 
   isCanvasBlank(): boolean {

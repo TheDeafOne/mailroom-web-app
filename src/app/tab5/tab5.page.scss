@@ -1,4 +1,23 @@
 canvas {
     border: 3px dashed gray;
+    height: 100%;
     width: 100%;
+}
+.signature-pad {
+    height: 50%;
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+}
+.signature-pad-cd {
+    height: 98%;
+    width: 99%;
+    margin: 0 auto;
+}
+.signature-pad-tb {
+    height: 60%;
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    background-color: rgb(212, 145, 56);
 }
