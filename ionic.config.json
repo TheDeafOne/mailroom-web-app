@@ -1,7 +1,10 @@
 {
   "name": "MailroomWebApp",
   "integrations": {
-    "capacitor": {}
+    "capacitor": {},
+    "cordova": {
+      "enabled": false
+    }
   },
   "type": "angular",
   "id": "d1e0d57b"
