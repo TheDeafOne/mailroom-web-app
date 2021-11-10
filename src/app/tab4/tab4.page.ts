@@ -1,7 +1,6 @@
 import { Component, OnInit, AfterViewInit, ViewChild } from '@angular/core';
 import data from 'src/assets/data/test-data.json';
 
-console.log(data)
 
 
 @Component({
@@ -12,11 +11,14 @@ console.log(data)
 
 export class Tab4Page implements OnInit, AfterViewInit {
   filterTerm: string;
-
   ngOnInit(){}
   ngAfterViewInit(){}
   constructor() {}
-
+  // headers = ["ID", "Name", "Box", "Package"]
+  // rows = data
+  headers = ["ID", "Name", "Box", "Package"]
+  rows = data.slice(0,99)
+  
   
 
 }
