@@ -19,6 +19,4 @@ export class Tab4Page implements OnInit, AfterViewInit {
   headers = ["ID", "Name", "Box", "Package"]
   rows = data.slice(0,99)
   
-  
-
 }

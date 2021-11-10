@@ -25,7 +25,7 @@
       </th>
     </tr>
 
-    <tr *ngFor = "let row of rows">
+    <tr *ngFor = "let row of rows | filter:filterTerm">
       <td *ngFor = "let column of headers">
         {{row[column]}}
       </td>
