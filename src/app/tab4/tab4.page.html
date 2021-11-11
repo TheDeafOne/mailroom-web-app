@@ -15,7 +15,7 @@
 
   
   
-  <ion-searchbar placeholder="Search..." [(ngModel)]="filterTerm" animated="true"></ion-searchbar>
+  <ion-searchbar placeholder="Search..." [(ngModel)]="filterTerm" (ionChange)="filterList()" animated="true"></ion-searchbar>
   <h1>Table</h1>
   
   <table>
@@ -24,7 +24,6 @@
         {{column}}
       </th>
     </tr>
-
     <tr *ngFor = "let row of rows | filter:filterTerm">
       <td *ngFor = "let column of headers">
         {{row[column]}}
