@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, ViewChild } from '@angular/core';
+import { Component } from '@angular/core';
 import data from 'src/assets/data/test-data.json';
 
 
@@ -9,10 +9,9 @@ import data from 'src/assets/data/test-data.json';
   styleUrls: ['tab4.page.scss']
 })
 
-export class Tab4Page implements OnInit, AfterViewInit {
+export class Tab4Page {
   filterTerm: string;
-  ngOnInit(){}
-  ngAfterViewInit(){}
+  
   constructor() {}
   // headers = ["ID", "Name", "Box", "Package"]
   // rows = data
