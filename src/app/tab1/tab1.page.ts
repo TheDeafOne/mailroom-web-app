@@ -3,25 +3,34 @@ import { Chart, registerables } from 'chart.js';
 import data from 'src/assets/data/test-data.json';
 
 Chart.register(...registerables)
+
+
 @Component({
   selector: 'app-tab1',
   templateUrl: 'tab1.page.html',
   styleUrls: ['tab1.page.scss']
 })
-export class Tab1Page {
-  @ViewChild('barChart') barChart;
 
-  bars: any;
+
+export class Tab1Page {
+  chartType: any = 'bar';
+  @ViewChild('barChart') barChart;
+  chart: any;
   colorArray: any;
   constructor() { }
 
+  test(event){
+    this.chartType = event["detail"]["value"]
+    this.chart.destroy();
+    this.createChart();
+  }
   ionViewDidEnter() {
     this.createChart();
   }
-
+  
   createChart() {
-    this.bars = new Chart(this.barChart.nativeElement, {
-      type: 'line',
+    this.chart = new Chart(this.barChart.nativeElement, {
+      type: this.chartType,
       data: {
         labels: ['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8'],
         datasets: [
