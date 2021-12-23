@@ -1,0 +1,44 @@
+ion-content{
+    --ion-background-color: #eef4f9;
+}
+
+ion-menu{
+    width: 100px;
+}
+
+ion-card {
+    background-color: white;
+}
+ion-card-header{
+    color: slategrey;
+    font-weight: bold;
+}
+
+
+canvas {
+    border: 3px gray;
+    width: 65%;
+}
+.chart-card{
+    width:98%;
+    height:70%;
+}
+
+.raw-card{
+    width:50%;
+    height:25%;
+}
+
+.raw-container{
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+}
+.raw-div1, .raw-div2, .raw-div3 {
+    position: relative;
+    width: 30%;
+    height: 100%;
+    float: left;
+    margin-left: 10px;
+}
+
