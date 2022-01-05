@@ -7,8 +7,8 @@ import data from 'src/assets/data/test-data.json';
 const dBuckets = [];
 var createdOnData: any = {};
 var signedOnData: any = {};
-var chartDisplayDataOne = [2.5, 3.8, 5, 6.9, 6.9, 7.5, 10, 17];
-var labelsG = ['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8'];
+var chartDisplayDataOne = [];
+var labelsG = [];
 
 function sortStudData() {
   for(const inEl of data){
@@ -28,8 +28,10 @@ function sortStudData() {
       signedOnData[sDate] = [inEl];
     }
   }
-
 }
+
+
+
 
 sortStudData();
 
@@ -75,19 +77,13 @@ export class dashboard {
     this.createChart();
   }
 
+  // Visualizing data for one day
   oneDay(){
-    // set element for individual day
     let dayHours = {};
-
-    // change x label data
-    labelsG = [];
-    for (let i = 5; i < 18; i++){
-      dayHours[i] = [];
-      labelsG.push(String(i+1));
-    }
+    labelsG = ["6am", "7am", "8am", "9am", "10am", "11am", "12pm", "1pm", "2pm", "3pm", "4pm", "5pm", "6pm"];
 
     // get latest day
-    let tmpKDates = Object.keys(signedOnData)
+    let tmpKDates = Object.keys(createdOnData)
     let tDay = createdOnData[tmpKDates[tmpKDates.length-1]];
     // extract data from 
     for (const val in tDay){
@@ -105,12 +101,12 @@ export class dashboard {
     this.createChart();
   }
 
-  fiveDay() {
+  oneWeek() {
     labelsG = [];
     chartDisplayDataOne = [];
-    let tmpKDates = Object.keys(signedOnData)
-    for (let i = 0; i < 5; i++){
-      let date = tmpKDates[tmpKDates.length+i-6];
+    let tmpKDates = Object.keys(createdOnData)
+    for (let i = 0; i < 7; i++){
+      let date = tmpKDates[tmpKDates.length+i-8];
       labelsG.push(date);
       chartDisplayDataOne.push(createdOnData[date].length);
     }
@@ -119,7 +115,42 @@ export class dashboard {
     this.createChart();
   }
 
-  
+  oneMonth(){
+    labelsG = []
+    chartDisplayDataOne = [];
+    let tmpKDates = Object.keys(createdOnData);
+    let dLen = tmpKDates.length;
+    let today = new Date(tmpKDates[dLen-1]);
+    let yesterday = new Date(tmpKDates[dLen-2]);
+    
+    let dayCount = 2;
+    if (today.getDate() > 7){ 
+      while(today.getMonth() == yesterday.getMonth()){
+        labelsG.splice(0,0,today.toDateString());
+        chartDisplayDataOne.splice(0,0,createdOnData[today.toDateString()].length);
+
+        today = new Date(tmpKDates[dLen-dayCount]);
+        yesterday = new Date(tmpKDates[dLen-dayCount-1]);
+        dayCount++;
+      }
+    } else if (today.getDate() > 1) {
+      this.oneWeek();
+    } else {
+      this.oneDay();
+    }
+
+    this.chart.destroy();
+    this.createChart();
+  }
+
+  threeMonth(){
+    labelsG = [];
+    chartDisplayDataOne = [];
+    let tmpKDates = Object.keys(signedOnData);
+    let date = new Date(tmpKDates[tmpKDates.length-1]);
+    
+    
+  }
   createChart() {
     this.chart = new Chart(this.barChart.nativeElement, {
       type: this.chartType,
