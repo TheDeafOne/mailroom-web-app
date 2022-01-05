@@ -16,11 +16,12 @@
     <ion-menu class="menu" type="overlay">
         <ion-header>
           <ion-toolbar color="primary">
-            <ion-buttons slot="start">
-              <ion-menu-button></ion-menu-button>
-            </ion-buttons>
+            
+
 
             <ion-title>Menu</ion-title>
+
+
           </ion-toolbar>
         </ion-header>
         
@@ -30,68 +31,146 @@
 
     <!-- Split Pane Router -->
     <ion-router-outlet id="main">
+      <ion-content no-padding>
+        <ion-grid>
+          <ion-row justify-content-end>
+            <ion-col size="6">
+              
+            <ion-card class="raw-card">
+              <ion-card-header>
+                Package Overview
+              </ion-card-header>
+              <ion-card-content>
+                <div class="raw-container">
+                <div class="raw-div1">
+                  <h2>
+                    Entered
+                  </h2>  
+                  <h1>
+                    420
+                  </h1>
+                </div>
 
-      
-      <!-- Raw Card -->
-      <ion-card class="raw-card">
-        <ion-card-header>
-          Package Overview
-        </ion-card-header>
-        <ion-card-content>
-          <div class="raw-container">
-          <div class="raw-div1">
-            <h2>
-              Entered
-            </h2>  
-            <h1>
-              420
-            </h1>
-          </div>
+                <div class="raw-div2">
+                  <h2>
+                    Signed
+                  </h2>
+                  <h1>
+                    69
+                  </h1>
+                </div>
+                
+                <div class="raw-div3">
+                  <h2>
+                    In System
+                  </h2>
+                  <h1>
+                    46290
+                  </h1>
+                </div>
+              </div>
+              </ion-card-content>
+            </ion-card>
+            </ion-col>
+            
+            <ion-col size="6">
+              <ion-card class="chart-use-card">
+                <ion-card-header>
+                  Chart Use Card
+                </ion-card-header>
+                
+                <ion-card-content>
+                  
+                  <ion-grid>
+                    
+                    <ion-row>
+                      <ion-list>
+                        <ion-item>
+                          <ion-label>chart type</ion-label>
+                          <ion-select value="bar" interface="popover" placeholder="bar" (ionChange)="showChartData($event)">
+                            <ion-select-option value="bar">Bar Chart</ion-select-option>
+                            <ion-select-option value="line">Line Chart</ion-select-option>
+                            <ion-select-option value="pie">Pie Chart</ion-select-option>
+                          </ion-select>
+                        </ion-item>
+                      </ion-list>
+                    </ion-row>
+                  </ion-grid>
 
-          <div class="raw-div2">
-            <h2>
-              Signed
-            </h2>
-            <h1>
-              69
-            </h1>
-          </div>
-          
-          <div class="raw-div3">
-            <h2>
-              In System
-            </h2>
-            <h1>
-              46290
-            </h1>
-          </div>
-        </div>
-        </ion-card-content>
-      </ion-card>
-
-      <!-- Chart Card -->
-      <ion-card class="chart-card">
-
-        <div>
-          <ion-card-header>
-            <ion-card-subtitle>Number of Viewers per season for</ion-card-subtitle>
-            <ion-card-title>Game of Thrones</ion-card-title>
-          </ion-card-header>
-
-          <ion-card-content>
-            <div class="chart-display">
-              <canvas #barChart></canvas>
-            </div>
-          </ion-card-content>
-        </div>
-      </ion-card>
-      
-
-
-
-    </ion-router-outlet>
-
-
-  </ion-split-pane>
+                </ion-card-content>
   
+              </ion-card>
+            </ion-col>
+          </ion-row>
+
+          <ion-row>
+            <ion-col size="12">
+              <ion-card class="chart-card">
+
+                <div>
+                  
+
+                  <div class="chart-time-container">
+                    <div class="chart-title">
+                      <ion-card-header>
+                        Charted
+                      </ion-card-header>
+                    </div>
+                    <div class="chart-time">
+                      <ion-button fill="clear" (click)="oneDay()"> 
+                        1d
+                      </ion-button>
+                    </div>
+                    <div class="chart-time">
+                      <ion-button fill="clear" (click)="fiveDay()">
+                        5d
+                      </ion-button>
+                    </div>
+                    <div class="chart-time">
+                      <ion-button fill="clear">
+                        1w
+                      </ion-button>
+                    </div>
+                    <div class="chart-time">
+                      <ion-button fill="clear">
+                        1m
+                      </ion-button>
+                    </div>
+                    <div class="chart-time" >
+                      <ion-button fill="clear">
+                        3m
+                      </ion-button>
+                    </div>
+                    <div class="chart-time">
+                      <ion-button fill="clear">
+                        1y
+                      </ion-button>
+                    </div>
+                    <div class="chart-time">
+                      <ion-button fill="clear">
+                        ytd
+                      </ion-button>
+                    </div>
+                    <div class="chart-time">
+                      <ion-button fill="clear">
+                        max
+                      </ion-button>
+                    </div>
+                  </div>
+
+                  <ion-card-content>
+                    <div class="chart-display">
+                      <canvas #barChart></canvas>
+                    </div>
+                  </ion-card-content>
+                </div>
+              </ion-card>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-content>
+
+      
+    </ion-router-outlet>
+  </ion-split-pane>
 </ion-content>
