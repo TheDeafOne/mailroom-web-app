@@ -1,5 +1,5 @@
 import { Component, ViewChild } from '@angular/core';
-import { Chart, registerables } from 'chart.js';
+import { Chart, DatasetController, registerables } from 'chart.js';
 import { MenuController } from '@ionic/angular';
 import data from 'src/assets/data/test-data.json';
 
@@ -29,6 +29,13 @@ function sortStudData() {
     }
   }
 }
+
+function clearChartXY(){
+  labelsG = [];
+  chartDisplayDataOne = [];
+}
+
+
 
 
 
@@ -80,25 +87,32 @@ export class dashboard {
   // Visualizing data for one day
   oneDay(){
     let dayHours = {};
+    chartDisplayDataOne = [];
     labelsG = ["6am", "7am", "8am", "9am", "10am", "11am", "12pm", "1pm", "2pm", "3pm", "4pm", "5pm", "6pm"];
 
     // get latest day
-    let tmpKDates = Object.keys(createdOnData)
+    let tmpKDates = Object.keys(createdOnData);
     let tDay = createdOnData[tmpKDates[tmpKDates.length-1]];
     // extract data from 
     for (const val in tDay){
       let time = new Date(tDay[val]["CreatedOn"]).getHours();
-      dayHours[time].push(tDay[val]);
+      if (time in dayHours){
+        dayHours[time].push(tDay[val]);
+      } else {
+        dayHours[time] = [tDay[val]];
+      }
     }
-
     // change display data
-    chartDisplayDataOne = [];
-    for (const val in dayHours){
-      chartDisplayDataOne.push(dayHours[val].length);
+    for (const val in labelsG){
+      let time = (Number(val.substring(0,2))+6);
+      if (time in dayHours){
+        chartDisplayDataOne.push(dayHours[time].length)
+      } else {
+        chartDisplayDataOne.push(0);
+      }
     }
 
-    this.chart.destroy();
-    this.createChart();
+    this.replaceChart();
   }
 
   oneWeek() {
@@ -111,45 +125,39 @@ export class dashboard {
       chartDisplayDataOne.push(createdOnData[date].length);
     }
 
-    this.chart.destroy();
-    this.createChart();
+    this.replaceChart();
   }
 
-  oneMonth(){
-    labelsG = []
-    chartDisplayDataOne = [];
-    let tmpKDates = Object.keys(createdOnData);
-    let dLen = tmpKDates.length;
-    let today = new Date(tmpKDates[dLen-1]);
-    let yesterday = new Date(tmpKDates[dLen-2]);
-    
-    let dayCount = 2;
-    if (today.getDate() > 7){ 
-      while(today.getMonth() == yesterday.getMonth()){
-        labelsG.splice(0,0,today.toDateString());
-        chartDisplayDataOne.splice(0,0,createdOnData[today.toDateString()].length);
 
-        today = new Date(tmpKDates[dLen-dayCount]);
-        yesterday = new Date(tmpKDates[dLen-dayCount-1]);
-        dayCount++;
+  nMonths(monthNum){
+    clearChartXY();
+    let tmpKDates = Object.keys(createdOnData);
+    let latestDate = new Date(tmpKDates[tmpKDates.length-1]);
+    let yearCorrection = 0;
+    let monthCorrection = 0;
+    for (let i = 0; i < monthNum; i++){
+      let date = new Date(latestDate.getFullYear()-yearCorrection, latestDate.getMonth()-monthNum+monthCorrection+i+2, 0);
+      for (const val in tmpKDates){
+        let currDate = new Date(tmpKDates[val]);
+        if (currDate.getMonth() == date.getMonth()){
+          labelsG.push(currDate.toDateString());
+          chartDisplayDataOne.push(createdOnData[currDate.toDateString()].length);
+        }
       }
-    } else if (today.getDate() > 1) {
-      this.oneWeek();
-    } else {
-      this.oneDay();
+
+      if(latestDate.getMonth()-i == 1){
+        yearCorrection = 1;
+        monthCorrection = 12;
+      }
     }
 
-    this.chart.destroy();
-    this.createChart();
+
+    this.replaceChart();
   }
 
-  threeMonth(){
-    labelsG = [];
-    chartDisplayDataOne = [];
-    let tmpKDates = Object.keys(signedOnData);
-    let date = new Date(tmpKDates[tmpKDates.length-1]);
-    
-    
+  replaceChart(){
+    this.chart.destroy();
+    this.createChart();
   }
   createChart() {
     this.chart = new Chart(this.barChart.nativeElement, {
