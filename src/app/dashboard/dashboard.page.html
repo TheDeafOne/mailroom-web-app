@@ -1,176 +1,138 @@
-<ion-header [translucent]="true">
-  <!-- <ion-toolbar>
-    <ion-title>
-      Tab 1
-    </ion-title>
-  </ion-toolbar> -->
-</ion-header>
-
-
 <ion-content>
-
-<!-- SPLIT PANE -->
-  <ion-split-pane contentId="main">
-
-    <!-- MENU -->
-    <ion-menu class="menu" type="overlay">
-        <ion-header>
-          <ion-toolbar color="primary">
-            
-
-
-            <ion-title>Menu</ion-title>
-
-
-          </ion-toolbar>
-        </ion-header>
+  <ion-grid>
+    <ion-row justify-content-end>
+      <ion-col size="6">
         
-    </ion-menu>
+      <ion-card class="raw-card">
+        <ion-card-header>
+          Package Overview
+        </ion-card-header>
+        <ion-card-content>
+          <div class="raw-container">
+          <div class="raw-div1">
+            <h2>
+              Entered
+            </h2>  
+            <h1>
+              420
+            </h1>
+          </div>
 
-
-
-    <!-- Split Pane Router -->
-    <ion-router-outlet id="main">
-      <ion-content no-padding>
-        <ion-grid>
-          <ion-row justify-content-end>
-            <ion-col size="6">
-              
-            <ion-card class="raw-card">
-              <ion-card-header>
-                Package Overview
-              </ion-card-header>
-              <ion-card-content>
-                <div class="raw-container">
-                <div class="raw-div1">
-                  <h2>
-                    Entered
-                  </h2>  
-                  <h1>
-                    420
-                  </h1>
-                </div>
-
-                <div class="raw-div2">
-                  <h2>
-                    Signed
-                  </h2>
-                  <h1>
-                    69
-                  </h1>
-                </div>
-                
-                <div class="raw-div3">
-                  <h2>
-                    In System
-                  </h2>
-                  <h1>
-                    46290
-                  </h1>
-                </div>
-              </div>
-              </ion-card-content>
-            </ion-card>
-            </ion-col>
-            
-            <ion-col size="6">
-              <ion-card class="chart-use-card">
-                <ion-card-header>
-                  Chart Use Card
-                </ion-card-header>
-                
-                <ion-card-content>
-                  
-                  <ion-grid>
-                    
-                    <ion-row>
-                      <ion-list>
-                        <ion-item>
-                          <ion-label>chart type</ion-label>
-                          <ion-select value="bar" interface="popover" placeholder="bar" (ionChange)="showChartData($event)">
-                            <ion-select-option value="bar">Bar Chart</ion-select-option>
-                            <ion-select-option value="line">Line Chart</ion-select-option>
-                          </ion-select>
-                        </ion-item>
-                      </ion-list>
-                    </ion-row>
-                  </ion-grid>
-
-                </ion-card-content>
-  
-              </ion-card>
-            </ion-col>
-          </ion-row>
-
-          <ion-row>
-            <ion-col size="12">
-              <ion-card class="chart-card">
-
-                <div>
-                  
-
-                  <div class="chart-time-container">
-                    <div class="chart-title">
-                      <ion-card-header>
-                        Charted
-                      </ion-card-header>
-                    </div>
-                    <div class="chart-time">
-                      <ion-button fill="clear" (click)="oneDay()"> 
-                        1d
-                      </ion-button>
-                    </div>
-                    <div class="chart-time">
-                      <ion-button fill="clear" (click)="oneWeek()">
-                        1w
-                      </ion-button>
-                    </div>
-                    
-                    <div class="chart-time">
-                      <ion-button fill="clear" (click)="nMonths(1)">
-                        1m
-                      </ion-button>
-                    </div>
-                    <div class="chart-time" >
-                      <ion-button fill="clear" (click)="nMonths(3)">
-                        3m
-                      </ion-button>
-                    </div>
-                    <div class="chart-time">
-                      <ion-button fill="clear" (click)="currentYear()">
-                        1y
-                      </ion-button>
-                    </div>
-                    <div class="chart-time" (click)="nMonths(12)">
-                      <ion-button fill="clear">
-                        ytd
-                      </ion-button>
-                    </div>
-                    <div class="chart-time">
-                      <ion-button fill="clear" (click)="maxData()">
-                        max
-                      </ion-button>
-                    </div>
-                    <div class="chart-time">
-                      <ion-button fill="clear">
-                        custom
-                      </ion-button>
-                    </div>
-                  </div>
-
-                  <ion-card-content>
-                    <div class="chart-display">
-                      <canvas #barChart></canvas>
-                    </div>
-                  </ion-card-content>
-                </div>
-              </ion-card>
-            </ion-col>
-          </ion-row>
-        </ion-grid>
-      </ion-content>
-
+          <div class="raw-div2">
+            <h2>
+              Signed
+            </h2>
+            <h1>
+              69
+            </h1>
+          </div>
+          
+          <div class="raw-div3">
+            <h2>
+              In System
+            </h2>
+            <h1>
+              46290
+            </h1>
+          </div>
+        </div>
+        </ion-card-content>
+      </ion-card>
+      </ion-col>
       
-    </ion-router-outlet>
-  </ion-split-pane>
+      <ion-col size="6">
+        <ion-card class="chart-use-card">
+          <ion-card-header>
+            Chart Use Card
+          </ion-card-header>
+          
+          <ion-card-content>
+            
+            <ion-grid>
+              
+              <ion-row>
+                <ion-list>
+                  <ion-item>
+                    <ion-label>chart type</ion-label>
+                    <ion-select value="bar" interface="popover" placeholder="bar" (ionChange)="showChartData($event)">
+                      <ion-select-option value="bar">Bar Chart</ion-select-option>
+                      <ion-select-option value="line">Line Chart</ion-select-option>
+                    </ion-select>
+                  </ion-item>
+                </ion-list>
+              </ion-row>
+            </ion-grid>
+
+          </ion-card-content>
+
+        </ion-card>
+      </ion-col>
+    </ion-row>
+
+    <ion-row>
+      <ion-col size="12">
+        <ion-card class="chart-card">
+
+          <div>
+            
+
+            <div class="chart-time-container">
+              <div class="chart-title">
+                <ion-card-header>
+                  Charted
+                </ion-card-header>
+              </div>
+              <div class="chart-time">
+                <ion-button fill="clear" (click)="oneDay()"> 
+                  1d
+                </ion-button>
+              </div>
+              <div class="chart-time">
+                <ion-button fill="clear" (click)="oneWeek()">
+                  1w
+                </ion-button>
+              </div>
+              
+              <div class="chart-time">
+                <ion-button fill="clear" (click)="nMonths(1)">
+                  1m
+                </ion-button>
+              </div>
+              <div class="chart-time" >
+                <ion-button fill="clear" (click)="nMonths(3)">
+                  3m
+                </ion-button>
+              </div>
+              <div class="chart-time">
+                <ion-button fill="clear" (click)="currentYear()">
+                  1y
+                </ion-button>
+              </div>
+              <div class="chart-time" (click)="nMonths(12)">
+                <ion-button fill="clear">
+                  ytd
+                </ion-button>
+              </div>
+              <div class="chart-time">
+                <ion-button fill="clear" (click)="maxData()">
+                  max
+                </ion-button>
+              </div>
+              <div class="chart-time">
+                <ion-button fill="clear">
+                  custom
+                </ion-button>
+              </div>
+            </div>
+
+            <ion-card-content>
+              <div class="chart-display">
+                <canvas #barChart></canvas>
+              </div>
+            </ion-card-content>
+          </div>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 </ion-content>
