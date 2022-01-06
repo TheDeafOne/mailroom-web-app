@@ -138,18 +138,23 @@
                       </ion-button>
                     </div>
                     <div class="chart-time">
-                      <ion-button fill="clear" (click)="nMonths(12)">
+                      <ion-button fill="clear" (click)="currentYear()">
                         1y
                       </ion-button>
                     </div>
-                    <div class="chart-time">
+                    <div class="chart-time" (click)="nMonths(12)">
                       <ion-button fill="clear">
                         ytd
                       </ion-button>
                     </div>
                     <div class="chart-time">
-                      <ion-button fill="clear">
+                      <ion-button fill="clear" (click)="maxData()">
                         max
+                      </ion-button>
+                    </div>
+                    <div class="chart-time">
+                      <ion-button fill="clear">
+                        custom
                       </ion-button>
                     </div>
                   </div>

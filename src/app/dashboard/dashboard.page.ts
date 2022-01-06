@@ -128,7 +128,19 @@ export class dashboard {
     this.replaceChart();
   }
 
-
+  currentYear(){
+    let tmpKDates = Object.keys(createdOnData);
+    let month = new Date(tmpKDates[tmpKDates.length-1]).getMonth();
+    this.nMonths(month+1);
+  }
+  maxData(){
+    clearChartXY();
+    for (const val in createdOnData){
+      labelsG.push(val);
+      chartDisplayDataOne.push(createdOnData[val].length);
+    }
+    this.replaceChart();
+  }
   nMonths(monthNum){
     clearChartXY();
     let tmpKDates = Object.keys(createdOnData);
