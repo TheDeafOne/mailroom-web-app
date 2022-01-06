@@ -13,7 +13,7 @@
             <h2>
               Entered
             </h2>  
-            <h1>
+            <h1 id="entered">
               420
             </h1>
           </div>
@@ -22,7 +22,7 @@
             <h2>
               Signed
             </h2>
-            <h1>
+            <h1 id="signed">
               69
             </h1>
           </div>
@@ -31,7 +31,7 @@
             <h2>
               In System
             </h2>
-            <h1>
+            <h1 id="inSystem">
               46290
             </h1>
           </div>
@@ -51,15 +51,12 @@
             <ion-grid>
               
               <ion-row>
-                <ion-list>
-                  <ion-item>
-                    <ion-label>chart type</ion-label>
-                    <ion-select value="bar" interface="popover" placeholder="bar" (ionChange)="showChartData($event)">
-                      <ion-select-option value="bar">Bar Chart</ion-select-option>
-                      <ion-select-option value="line">Line Chart</ion-select-option>
-                    </ion-select>
-                  </ion-item>
-                </ion-list>
+                <ion-item lines="none">
+                  <ion-select value="bar" interface="popover" placeholder="bar" (ionChange)="showChartData($event)">
+                    <ion-select-option value="bar">Bar Chart</ion-select-option>
+                    <ion-select-option value="line">Line Chart</ion-select-option>
+                  </ion-select>
+                </ion-item>
               </ion-row>
             </ion-grid>
 

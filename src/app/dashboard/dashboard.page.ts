@@ -1,17 +1,19 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, OnInit } from '@angular/core';
 import { Chart, DatasetController, registerables } from 'chart.js';
 import { MenuController } from '@ionic/angular';
+
 import data from 'src/assets/data/test-data.json';
 
 
-const dBuckets = [];
 var createdOnData: any = {};
 var signedOnData: any = {};
 var chartDisplayDataOne = [];
 var labelsG = [];
-
+var enteredValue = 0;
+var signedValue = 0;
 function sortStudData() {
   for(const inEl of data){
+    enteredValue++;
     let cDate: string = new Date(inEl["CreatedOn"]).toDateString();
     let sDate: string = new Date(inEl["SignedOn"]).toDateString();
     // adding created on data
@@ -22,10 +24,13 @@ function sortStudData() {
     }
     
     // adding signed on data
-    if (sDate in signedOnData){
-      signedOnData[sDate].push(inEl);
-    } else{
-      signedOnData[sDate] = [inEl];
+    if (sDate != "NA"){
+      signedValue++;
+      if (sDate in signedOnData){
+        signedOnData[sDate].push(inEl);
+      } else {
+        signedOnData[sDate] = [inEl];
+      }
     }
   }
 }
@@ -76,14 +81,18 @@ Chart.register(...registerables)
   styleUrls: ['dashboard.page.scss']
 })
 
-export class dashboard {
+export class dashboard implements OnInit {
   chartType: any = 'bar';
   @ViewChild('barChart') barChart;
   chart: any;
   colorArray: any;
   constructor(private menu: MenuController) { }
-  
-
+ 
+  ngOnInit() {
+    document.getElementById("entered").innerText = enteredValue.toString();
+    document.getElementById("signed").innerText = signedValue.toString();
+    document.getElementById("inSystem").innerText = (enteredValue-signedValue).toString();
+  }
   openFirst(){
     this.menu.enable(true,'first');
     this.menu.open('first');
@@ -171,6 +180,9 @@ export class dashboard {
     this.createChart();
   }
   createChart() {
+    if(this.chart!=null){
+      this.chart.destroy();
+    }
     this.chart = new Chart(this.barChart.nativeElement, {
       type: this.chartType,
       data: {
