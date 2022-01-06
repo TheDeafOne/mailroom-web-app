@@ -36,57 +36,8 @@ function clearChartXY(){
 }
 
 
-
-
-
-
-sortStudData();
-
-Chart.register(...registerables)
-
-
-@Component({
-  selector: 'app-dashboard',
-  templateUrl: 'dashboard.page.html',
-  styleUrls: ['dashboard.page.scss']
-})
-
-export class dashboard {
-  chartType: any = 'bar';
-  @ViewChild('barChart') barChart;
-  chart: any;
-  colorArray: any;
-  constructor(private menu: MenuController) { }
-  openFirst(){
-    this.menu.enable(true,'first');
-    this.menu.open('first');
-  }
-  openEnd(){
-    this.menu.open('end')
-  }
-  openCustom(){
-    this.menu.enable(true,'custom');
-    this.menu.open('custom');
-  }
-
-  shouldShow(){
-    console.log("value")
-  }
-
-  showChartData(event){
-    var value = event["detail"]["value"]
-    this.chart.destroy();
-    this.chartType = value;
-    this.createChart();
-  }
-
-  ionViewDidEnter() {
-    this.createChart();
-  }
-
-  // Visualizing data for one day
-  oneDay(){
-    let dayHours = {};
+function defaultChartDisplay(){
+  let dayHours = {};
     chartDisplayDataOne = [];
     labelsG = ["6am", "7am", "8am", "9am", "10am", "11am", "12pm", "1pm", "2pm", "3pm", "4pm", "5pm", "6pm"];
 
@@ -111,7 +62,55 @@ export class dashboard {
         chartDisplayDataOne.push(0);
       }
     }
+}
 
+sortStudData();
+defaultChartDisplay();
+
+Chart.register(...registerables)
+
+
+@Component({
+  selector: 'app-dashboard',
+  templateUrl: 'dashboard.page.html',
+  styleUrls: ['dashboard.page.scss']
+})
+
+export class dashboard {
+  chartType: any = 'bar';
+  @ViewChild('barChart') barChart;
+  chart: any;
+  colorArray: any;
+  constructor(private menu: MenuController) { }
+  
+
+  openFirst(){
+    this.menu.enable(true,'first');
+    this.menu.open('first');
+  }
+  openEnd(){
+    this.menu.open('end')
+  }
+  openCustom(){
+    this.menu.enable(true,'custom');
+    this.menu.open('custom');
+  }
+
+  showChartData(event){
+    var value = event["detail"]["value"]
+    this.chart.destroy();
+    this.chartType = value;
+    this.createChart();
+  }
+
+  ionViewDidEnter() {
+    this.createChart();
+  }
+
+  // Visualizing data for one day
+  oneDay(){
+    clearChartXY();
+    defaultChartDisplay();
     this.replaceChart();
   }
 
