@@ -3,41 +3,36 @@
     <ion-row justify-content-end>
       <ion-col size="6">
         
-      <ion-card class="raw-card">
-        <ion-card-header>
-          Package Overview
-        </ion-card-header>
-        <ion-card-content>
-          <div class="raw-container">
-          <div class="raw-div1">
-            <h2>
-              Entered
-            </h2>  
-            <h1 id="entered">
-              420
-            </h1>
-          </div>
+        <ion-card class="raw-card">
+          <ion-card-header>
+            Package Overview
+          </ion-card-header>
+          <ion-card-content>
+            
+            <div class="raw-container">
+            <div class="raw-div1">
+              <h2>
+                Entered
+              </h2>  
+              <h1 id="entered"></h1>
+            </div>
 
-          <div class="raw-div2">
-            <h2>
-              Signed
-            </h2>
-            <h1 id="signed">
-              69
-            </h1>
+            <div class="raw-div2">
+              <h2>
+                Signed
+              </h2>
+              <h1 id="signed"></h1>
+            </div>
+            
+            <div class="raw-div3">
+              <h2>
+                In System
+              </h2>
+              <h1 id="inSystem"></h1>
+            </div>
           </div>
-          
-          <div class="raw-div3">
-            <h2>
-              In System
-            </h2>
-            <h1 id="inSystem">
-              46290
-            </h1>
-          </div>
-        </div>
-        </ion-card-content>
-      </ion-card>
+          </ion-card-content>
+        </ion-card>
       </ion-col>
       
       <ion-col size="6">
@@ -47,18 +42,73 @@
           </ion-card-header>
           
           <ion-card-content>
-            
-            <ion-grid>
-              
-              <ion-row>
-                <ion-item lines="none">
-                  <ion-select value="bar" interface="popover" placeholder="bar" (ionChange)="showChartData($event)">
-                    <ion-select-option value="bar">Bar Chart</ion-select-option>
-                    <ion-select-option value="line">Line Chart</ion-select-option>
-                  </ion-select>
-                </ion-item>
-              </ion-row>
-            </ion-grid>
+            <div class="chart-use-container">
+              <ion-grid>
+                <ion-row>
+                  <ion-col>
+                    <ion-item lines="none">
+                      <ion-select id="dayFilter" value="All" interface="action-sheet" placeholder="Day" multiple="true">
+                        <ion-select-option value="Monday">Monday</ion-select-option>
+                        <ion-select-option value="Tuesday">Tuesday</ion-select-option>
+                        <ion-select-option value="Wednesday">Wednesday</ion-select-option>
+                        <ion-select-option value="Thursday">Thursday</ion-select-option>
+                        <ion-select-option value="Friday">Friday</ion-select-option>
+                        <ion-select-option value="Saturday">Saturday</ion-select-option>
+                        <ion-select-option value="All">All</ion-select-option>
+                      </ion-select>
+                    </ion-item>
+                  </ion-col>
+                  
+                  <ion-col>
+                    <ion-item lines="none">
+                      <ion-select value="All" interface="popover" placeholder="Package">
+                        <ion-select-option value="Box">Box</ion-select-option>
+                        <ion-select-option value="Flat">Flat</ion-select-option>
+                        <ion-select-option value="Shelf">Shelf</ion-select-option>
+                        <ion-select-option value="Tube">Tube</ion-select-option>
+                        <ion-select-option value="All">All</ion-select-option>
+                      </ion-select>
+                    </ion-item>
+                  </ion-col> 
+
+                  <ion-col>
+                    <ion-item lines="none">
+                      <ion-select value="All" interface="popover" placeholder="Courier">
+                        <ion-select-option value="Amazon">Amazon</ion-select-option>
+                        <ion-select-option value="UPS">UPS</ion-select-option>
+                        <ion-select-option value="Other">Other</ion-select-option>
+                        <ion-select-option value="All">All</ion-select-option>
+                      </ion-select>
+                    </ion-item>
+                  </ion-col> 
+                  
+                  <ion-col>
+                    <ion-item lines="none">
+                      <ion-select value="All" interface="popover" placeholder="Recipient" multiple="True">
+                        <ion-select-option value="Faculty">Faculty</ion-select-option>
+                        <ion-select-option value="Student">Student</ion-select-option>
+                        <ion-select-option value="Boxes">Boxes</ion-select-option>
+                        <ion-select-option value="All">All</ion-select-option>
+                      </ion-select>
+                    </ion-item>
+                  </ion-col> 
+                  
+                </ion-row>
+
+                <!-- <ion-row>
+                  <ion-col>
+                    <ion-item lines="none">
+                      <ion-select value="bar" interface="popover" placeholder="bar" (ionChange)="showChartData($event)">
+                        <ion-select-option value="bar">Bar Chart</ion-select-option>
+                        <ion-select-option value="line">Line Chart</ion-select-option>
+                      </ion-select>
+                    </ion-item>
+                  </ion-col>
+                </ion-row> -->
+
+
+              </ion-grid>
+            </div>
 
           </ion-card-content>
 
@@ -71,8 +121,6 @@
         <ion-card class="chart-card">
 
           <div>
-            
-
             <div class="chart-time-container">
               <div class="chart-title">
                 <ion-card-header>

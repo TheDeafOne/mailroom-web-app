@@ -4,6 +4,7 @@ import { MenuController } from '@ionic/angular';
 
 import data from 'src/assets/data/test-data.json';
 
+var selectedLeave : string = '';
 
 var createdOnData: any = {};
 var signedOnData: any = {};
@@ -92,6 +93,7 @@ export class dashboard implements OnInit {
     document.getElementById("entered").innerText = enteredValue.toString();
     document.getElementById("signed").innerText = signedValue.toString();
     document.getElementById("inSystem").innerText = (enteredValue-signedValue).toString();
+    // console.log(document.getElementById("dayFilter").children);
   }
   openFirst(){
     this.menu.enable(true,'first');
@@ -115,6 +117,8 @@ export class dashboard implements OnInit {
   ionViewDidEnter() {
     this.createChart();
   }
+
+  
 
   // Visualizing data for one day
   oneDay(){
