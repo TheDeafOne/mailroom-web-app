@@ -7,8 +7,8 @@
           <ion-card-header>
             Package Overview
           </ion-card-header>
+
           <ion-card-content>
-            
             <div class="raw-container">
             <div class="raw-div1">
               <h2>
@@ -119,14 +119,18 @@
     <ion-row>
       <ion-col size="12">
         <ion-card class="chart-card">
+          <ion-card-header>
+            Charted
+          </ion-card-header>
+          <ion-card-content>
+            <!-- chart display -->
+            <div class="chart-display">
+              <canvas #barChart></canvas>
+            </div>
 
-          <div>
+            <!-- chart times -->
             <div class="chart-time-container">
-              <div class="chart-title">
-                <ion-card-header>
-                  Charted
-                </ion-card-header>
-              </div>
+              
               <div class="chart-time">
                 <ion-button fill="clear" (click)="oneDay()"> 
                   1d
@@ -168,14 +172,11 @@
                   custom
                 </ion-button>
               </div>
+              
             </div>
-
-            <ion-card-content>
-              <div class="chart-display">
-                <canvas #barChart></canvas>
-              </div>
-            </ion-card-content>
-          </div>
+  
+          </ion-card-content>
+          
         </ion-card>
       </ion-col>
     </ion-row>
