@@ -209,6 +209,12 @@ export class dashboard implements OnInit {
       ]
       },
       options: {
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top'
+          }
+        },
         responsive: true,
         maintainAspectRatio: false,
         scales: {

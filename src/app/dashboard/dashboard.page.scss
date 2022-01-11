@@ -23,9 +23,16 @@ canvas {
     border: 3px gray;
     width: 74%;
 }
+
+.chart {
+    position: fixed;
+    bottom: 10px;
+    width: 98%;
+}
 .chart-card{
     height:100%;
 }
+
 .chart-time-container{
     display:flex;
     justify-content: center;
