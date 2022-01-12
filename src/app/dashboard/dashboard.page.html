@@ -1,14 +1,15 @@
 <ion-content>
+  
   <ion-grid>
     <ion-row justify-content-end>
-      <ion-col size="6">
+      <ion-col size="12">
         
-        <!-- <ion-card class="raw-card">
+        <ion-card class="raw-card">
           <ion-card-header>
             Package Overview
           </ion-card-header>
 
-          <ion-card-content> -->
+          <ion-card-content>
             <div class="raw-container">
               <div class="raw-div1">
                 <h2>
@@ -31,89 +32,10 @@
                 <h1 id="inSystem"></h1>
               </div>
             </div>
-          <!-- </ion-card-content>
-        </ion-card> -->
+          </ion-card-content>
+        </ion-card>
       </ion-col>
       
-      <ion-col size="6">
-        <!-- <ion-card class="chart-use-card">
-          <ion-card-header>
-            Chart Use Card
-          </ion-card-header>
-          
-          <ion-card-content> -->
-            <div class="chart-use-container">
-              <ion-grid>
-                <ion-row>
-                  <ion-col>
-                    <ion-item lines="none">
-                      <ion-select id="dayFilter" value="All" interface="action-sheet" placeholder="Day" multiple="true">
-                        <ion-select-option value="Monday">Monday</ion-select-option>
-                        <ion-select-option value="Tuesday">Tuesday</ion-select-option>
-                        <ion-select-option value="Wednesday">Wednesday</ion-select-option>
-                        <ion-select-option value="Thursday">Thursday</ion-select-option>
-                        <ion-select-option value="Friday">Friday</ion-select-option>
-                        <ion-select-option value="Saturday">Saturday</ion-select-option>
-                        <ion-select-option value="All">All</ion-select-option>
-                      </ion-select>
-                    </ion-item>
-                  </ion-col>
-                  
-                  <ion-col>
-                    <ion-item lines="none">
-                      <ion-select value="All" interface="popover" placeholder="Package">
-                        <ion-select-option value="Box">Box</ion-select-option>
-                        <ion-select-option value="Flat">Flat</ion-select-option>
-                        <ion-select-option value="Shelf">Shelf</ion-select-option>
-                        <ion-select-option value="Tube">Tube</ion-select-option>
-                        <ion-select-option value="All">All</ion-select-option>
-                      </ion-select>
-                    </ion-item>
-                  </ion-col> 
-
-                  <ion-col>
-                    <ion-item lines="none">
-                      <ion-select value="All" interface="popover" placeholder="Courier">
-                        <ion-select-option value="Amazon">Amazon</ion-select-option>
-                        <ion-select-option value="UPS">UPS</ion-select-option>
-                        <ion-select-option value="Other">Other</ion-select-option>
-                        <ion-select-option value="All">All</ion-select-option>
-                      </ion-select>
-                    </ion-item>
-                  </ion-col> 
-                  
-                  <ion-col>
-                    <ion-item lines="none">
-                      <ion-select value="All" interface="popover" placeholder="Recipient" multiple="True">
-                        <ion-select-option value="Faculty">Faculty</ion-select-option>
-                        <ion-select-option value="Student">Student</ion-select-option>
-                        <ion-select-option value="Boxes">Boxes</ion-select-option>
-                        <ion-select-option value="All">All</ion-select-option>
-                      </ion-select>
-                    </ion-item>
-                  </ion-col> 
-                  
-                </ion-row>
-
-                <!-- <ion-row>
-                  <ion-col>
-                    <ion-item lines="none">
-                      <ion-select value="bar" interface="popover" placeholder="bar" (ionChange)="showChartData($event)">
-                        <ion-select-option value="bar">Bar Chart</ion-select-option>
-                        <ion-select-option value="line">Line Chart</ion-select-option>
-                      </ion-select>
-                    </ion-item>
-                  </ion-col>
-                </ion-row> -->
-
-
-              </ion-grid>
-            </div>
-
-          <!-- </ion-card-content>
-
-        </ion-card> -->
-      </ion-col>
     </ion-row>
 
     <ion-row>
@@ -121,63 +43,127 @@
 
       <div class="chart">
         <ion-card class="chart-card">
-          <ion-card-header>
-            Charted
-          </ion-card-header>
+          <div class="chart-filters">
+            <div>
+              <ion-card-header>
+                Charted
+              </ion-card-header>
+            </div>
 
-          <ion-card-content>
+            <div class="day-filter">
+              <ion-button (click)="presentAlertMultipleButtons()">Alert</ion-button>
+              <!-- <ion-item lines="none">
+
+                <ion-select id="dayFilter" interface="alert" value="All" placeholder="Day" multiple="true">
+                  <ion-select-option value="Monday">Monday</ion-select-option>
+                  <ion-select-option value="Tuesday">Tuesday</ion-select-option>
+                  <ion-select-option value="Wednesday">Wednesday</ion-select-option>
+                  <ion-select-option value="Thursday">Thursday</ion-select-option>
+                  <ion-select-option value="Friday">Friday</ion-select-option>
+                  <ion-select-option value="Saturday">Saturday</ion-select-option>
+                  <ion-select-option value="All">All Days</ion-select-option>
+                </ion-select>
+              </ion-item> -->
+            </div>
+
+            <div>
+              <ion-item lines="none">
+                <ion-select value="All" placeholder="Package" multiple="true">
+                  <ion-select-option value="Box">Box</ion-select-option>
+                  <ion-select-option value="Flat">Flat</ion-select-option>
+                  <ion-select-option value="Shelf">Shelf</ion-select-option>
+                  <ion-select-option value="Tube">Tube</ion-select-option>
+                  <ion-select-option value="All">All Packages</ion-select-option>
+                </ion-select>
+              </ion-item>
+            </div>
+
+            <div>
+              <ion-item lines="none">
+                <ion-select value="All" placeholder="Courier" multiple="true">
+                  <ion-select-option value="Amazon">Amazon</ion-select-option>
+                  <ion-select-option value="UPS">UPS</ion-select-option>
+                  <ion-select-option value="Other">Other</ion-select-option>
+                  <ion-select-option value="All">All Couriers</ion-select-option>
+                </ion-select>
+              </ion-item>
+            </div>
+
+            <div>
+              <ion-item lines="none">
+                <ion-select value="All" placeholder="Recipient" multiple="true">
+                  <ion-select-option value="Faculty">Faculty</ion-select-option>
+                  <ion-select-option value="Student">Student</ion-select-option>
+                  <ion-select-option value="Boxes">Boxes</ion-select-option>
+                  <ion-select-option value="All">All Recipients</ion-select-option>
+                </ion-select>
+              </ion-item>
+            </div>
+            <div>
+              <ion-item lines="none">
+                <ion-select value="bar" interface="popover" placeholder="bar" (ionChange)="showChartData($event)">
+                  <ion-select-option value="bar">Bar Chart</ion-select-option>
+                  <ion-select-option value="line">Line Chart</ion-select-option>
+                </ion-select>
+              </ion-item>
+            </div>
+          </div>
+
+          <ion-card-content class="chart-card-content">
             <!-- chart display -->
               <div class="chart-display">
                 <canvas #barChart></canvas>
               </div>
 
-              <!-- chart times -->
-              <div class="chart-time-container">
-                
-                <div class="chart-time">
-                  <ion-button fill="clear" (click)="oneDay()"> 
-                    1d
-                  </ion-button>
-                </div>
-                <div class="chart-time">
-                  <ion-button fill="clear" (click)="oneWeek()">
-                    1w
-                  </ion-button>
-                </div>
-                
-                <div class="chart-time">
-                  <ion-button fill="clear" (click)="nMonths(1)">
-                    1m
-                  </ion-button>
-                </div>
-                <div class="chart-time" >
-                  <ion-button fill="clear" (click)="nMonths(3)">
-                    3m
-                  </ion-button>
-                </div>
-                <div class="chart-time">
-                  <ion-button fill="clear" (click)="currentYear()">
-                    1y
-                  </ion-button>
-                </div>
-                <div class="chart-time" (click)="nMonths(12)">
-                  <ion-button fill="clear">
-                    ytd
-                  </ion-button>
-                </div>
-                <div class="chart-time">
-                  <ion-button fill="clear" (click)="maxData()">
-                    max
-                  </ion-button>
-                </div>
-                <div class="chart-time">
-                  <ion-button fill="clear">
-                    custom
-                  </ion-button>
-                </div>
-                
-              </div>
+              
             </ion-card-content>
+
+            <!-- chart times -->
+            <div class="chart-time-container">
+                
+              <div class="chart-time">
+                <ion-button fill="clear" (click)="oneDay()"> 
+                  1d
+                </ion-button>
+              </div>
+              <div class="chart-time">
+                <ion-button fill="clear" (click)="oneWeek()">
+                  1w
+                </ion-button>
+              </div>
+              
+              <div class="chart-time">
+                <ion-button fill="clear" (click)="nMonths(1)">
+                  1m
+                </ion-button>
+              </div>
+              <div class="chart-time" >
+                <ion-button fill="clear" (click)="nMonths(3)">
+                  3m
+                </ion-button>
+              </div>
+              <div class="chart-time">
+                <ion-button fill="clear" (click)="currentYear()">
+                  1y
+                </ion-button>
+              </div>
+              <div class="chart-time" (click)="nMonths(12)">
+                <ion-button fill="clear">
+                  ytd
+                </ion-button>
+              </div>
+              <div class="chart-time">
+                <ion-button fill="clear" (click)="maxData()">
+                  max
+                </ion-button>
+              </div>
+              <div class="chart-time">
+                <ion-button fill="clear">
+                  custom
+                </ion-button>
+              </div>
+            </div>
+
           </ion-card>
         </div>
   

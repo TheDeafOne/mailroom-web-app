@@ -4,8 +4,8 @@ ion-content{
 
 ion-item{
     --ion-background-color: white;
-    margin: 0 !important;
     padding: 0 !important;
+    margin: 0 !important;
 }
 
 ion-card {
@@ -21,18 +21,29 @@ ion-card-header{
 
 canvas {
     border: 3px gray;
-    width: 74%;
+    width: 68%;
 }
 
 .chart {
     position: fixed;
     bottom: 10px;
     width: 98%;
+    height: 70%;
 }
 .chart-card{
     height:100%;
 }
 
+.chart-filters{
+    display:flex;
+    justify-content: left;
+    width:100%;
+    overflow: hidden;
+}
+.filter-button{
+    margin: 0 !important;
+    padding: 0 !important;
+}
 .chart-time-container{
     display:flex;
     justify-content: center;
@@ -40,19 +51,16 @@ canvas {
     overflow: hidden;
 }
 
-.chart-time {
-    position: relative;
-    height: 100%;
-    float: left;
+.chart-card-content{
+    margin-top:0;
+    margin-bottom:0;
+    padding-top:0;
+    padding-bottom:0;
 }
-
 .chart-title{
     position: relative;
     float: left;
     margin-right: 10%;
-}
-.chart-use-card{
-    height:100%;
 }
 
 .raw-card{
