@@ -51,7 +51,7 @@
             </div>
 
             <div>
-              <ion-button class="filter" (click)="dayFilter()">Day</ion-button>
+              <ion-button id="one-day-filter" class="filter" (click)="dayFilter()">Day</ion-button>
             </div>
 
             <div>
@@ -114,7 +114,7 @@
                   1y
                 </ion-button>
               </div>
-              <div class="chart-time" (click)="nMonths(12)">
+              <div class="chart-time" (click)="yearToDate()">
                 <ion-button fill="clear">
                   ytd
                 </ion-button>

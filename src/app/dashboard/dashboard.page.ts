@@ -4,7 +4,6 @@ import { MenuController, AlertController } from '@ionic/angular';
 import { filters } from './dashboard.filters';
 
 import data from 'src/assets/data/test-data.json';
-
 var createdOnData: any = {};
 var signedOnData: any = {};
 var chartDisplayDataOne = [];
@@ -91,7 +90,6 @@ export class dashboard implements OnInit {
   filtersC = new filters(new AlertController());
 
 
-
   ngOnInit() {
     document.getElementById("entered").innerText = enteredValue.toString();
     document.getElementById("signed").innerText = signedValue.toString();
@@ -113,6 +111,10 @@ export class dashboard implements OnInit {
  
   dayFilter(){
     this.filtersC.dayFilter();
+    
+    for (let day in labelsG){
+      console.log(day);
+    }
   }
 
   packageFilter(){
@@ -126,6 +128,8 @@ export class dashboard implements OnInit {
   recipientFilter(){
     this.filtersC.recipientFilter();
   }
+
+
 
   showChartData(event){
     var value = event["detail"]["value"]
@@ -142,6 +146,7 @@ export class dashboard implements OnInit {
 
   // Visualizing data for one day
   oneDay(){
+    (<HTMLInputElement> document.getElementById("one-day-filter")).disabled = true;
     clearChartXY();
     defaultChartDisplay();
     this.chart.destroy();
@@ -177,11 +182,11 @@ export class dashboard implements OnInit {
   }
 
   yearToDate(){
-    
     this.nMonths(12);
     let tmpKDates = Object.keys(createdOnData);
     let latestDate = new Date(tmpKDates[tmpKDates.length-1]);
     let currDate = new Date(labelsG[0]);
+
     while (currDate.getDate() < latestDate.getDate()){
       labelsG.splice(0,1);
       chartDisplayDataOne.splice(0,1);
@@ -217,6 +222,7 @@ export class dashboard implements OnInit {
   }
 
   replaceChart(){
+    (<HTMLInputElement> document.getElementById("one-day-filter")).disabled = false;
     this.chart.destroy();
     for (let i = 0; i < labelsG.length; i++){
       labelsG[i] = labelsG[i].substring(4,10);
