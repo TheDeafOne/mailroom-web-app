@@ -1,12 +1,9 @@
 import { Component, ViewChild, OnInit } from '@angular/core';
 import { Chart, DatasetController, registerables } from 'chart.js';
 import { MenuController, AlertController } from '@ionic/angular';
-
+import { filters } from './dashboard.filters';
 
 import data from 'src/assets/data/test-data.json';
-import { Alert } from 'selenium-webdriver';
-
-var selectedLeave : string = '';
 
 var createdOnData: any = {};
 var signedOnData: any = {};
@@ -89,117 +86,11 @@ export class dashboard implements OnInit {
   @ViewChild('barChart') barChart;
   chart: any;
   colorArray: any;
-  constructor(private menu: MenuController, public alertController: AlertController) { }
-  mondayC = true;
-  tuesdayC = true;
-  wednesdayC = true;
-  thursdayC = true;
-  fridayC = true;
-  saturdayC = true;
+  constructor(private menu: MenuController) {}
 
-  async presentAlertMultipleButtons() {
+  filtersC = new filters(new AlertController());
 
-    const alert = await this.alertController.create({
-      cssClass: 'my-custom-class',
-      header: 'Alert',
-      inputs: [
-        {
-          name: 'monday',
-          type: 'checkbox',
-          label: 'Monday',
-          value: 'monday',
-          handler: () => {
-            this.mondayC = !this.mondayC;
-          },
-          checked: this.mondayC
-        },
 
-        {
-          name: 'tuesday',
-          type: 'checkbox',
-          label: 'Tuesday',
-          value: 'tuesday',
-          handler: () => {
-            this.tuesdayC = !this.tuesdayC;
-          },
-          checked: this.tuesdayC
-        },
-
-        {
-          name: 'wednesday',
-          type: 'checkbox',
-          label: 'Wednesday',
-          value: 'wednesday',
-          handler: () => {
-            this.wednesdayC = !this.wednesdayC;
-          },
-          checked: this.wednesdayC
-        },
-
-        {
-          name: 'thursday',
-          type: 'checkbox',
-          label: 'Thursday',
-          value: 'thursday',
-          handler: () => {
-            this.thursdayC = !this.thursdayC;
-          },
-          checked: this.thursdayC
-        },
-
-        {
-          name: 'friday',
-          type: 'checkbox',
-          label: 'Friday',
-          value: 'thursday',
-          handler: () => {
-            this.fridayC = !this.fridayC;
-          },
-          checked: this.fridayC
-        },
-
-        {
-          name: 'saturday',
-          type: 'checkbox',
-          label: 'Saturday',
-          value: 'saturday',
-          handler: (blah) => {
-            blah.checked = !blah.checked;
-          },
-          checked: this.saturdayC
-        }
-      ],
-      buttons: [
-        {
-          text: 'Reset',
-          cssClass: 'filter-button',
-          handler: (blah) => {
-            this.mondayC = true;
-            this.tuesdayC = true;
-            this.wednesdayC = true;
-            this.thursdayC = true;
-            this.fridayC = true;
-            this.saturdayC = true;
-          }
-        },
-        {
-          text: 'Clear',
-          cssClass: 'filter-button',
-          handler: (blah) => {
-            this.mondayC = false;
-            this.tuesdayC = false;
-            this.wednesdayC = false;
-            this.thursdayC = false;
-            this.fridayC = false;
-            this.saturdayC = false;
-          }
-        }, 
-        
-      ]
-    });
-
-    await alert.present();
-  }
 
   ngOnInit() {
     document.getElementById("entered").innerText = enteredValue.toString();
@@ -219,6 +110,23 @@ export class dashboard implements OnInit {
     this.menu.open('custom');
   }
 
+ 
+  dayFilter(){
+    this.filtersC.dayFilter();
+  }
+
+  packageFilter(){
+    this.filtersC.packageFilter();
+  }
+  
+  courierFilter(){
+    this.filtersC.courierFilter();
+  }
+
+  recipientFilter(){
+    this.filtersC.recipientFilter();
+  }
+
   showChartData(event){
     var value = event["detail"]["value"]
     this.chart.destroy();
@@ -236,7 +144,8 @@ export class dashboard implements OnInit {
   oneDay(){
     clearChartXY();
     defaultChartDisplay();
-    this.replaceChart();
+    this.chart.destroy();
+    this.createChart();
   }
 
   oneWeek() {
@@ -257,6 +166,7 @@ export class dashboard implements OnInit {
     let month = new Date(tmpKDates[tmpKDates.length-1]).getMonth();
     this.nMonths(month+1);
   }
+  
   maxData(){
     clearChartXY();
     for (const val in createdOnData){

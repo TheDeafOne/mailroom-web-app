@@ -43,62 +43,29 @@
 
       <div class="chart">
         <ion-card class="chart-card">
-          <div class="chart-filters">
+          <div class="chart-filters-wrapper">
             <div>
               <ion-card-header>
-                Charted
+                Filters
               </ion-card-header>
             </div>
 
-            <div class="day-filter">
-              <ion-button (click)="presentAlertMultipleButtons()">Alert</ion-button>
-              <!-- <ion-item lines="none">
-
-                <ion-select id="dayFilter" interface="alert" value="All" placeholder="Day" multiple="true">
-                  <ion-select-option value="Monday">Monday</ion-select-option>
-                  <ion-select-option value="Tuesday">Tuesday</ion-select-option>
-                  <ion-select-option value="Wednesday">Wednesday</ion-select-option>
-                  <ion-select-option value="Thursday">Thursday</ion-select-option>
-                  <ion-select-option value="Friday">Friday</ion-select-option>
-                  <ion-select-option value="Saturday">Saturday</ion-select-option>
-                  <ion-select-option value="All">All Days</ion-select-option>
-                </ion-select>
-              </ion-item> -->
+            <div>
+              <ion-button class="filter" (click)="dayFilter()">Day</ion-button>
             </div>
 
             <div>
-              <ion-item lines="none">
-                <ion-select value="All" placeholder="Package" multiple="true">
-                  <ion-select-option value="Box">Box</ion-select-option>
-                  <ion-select-option value="Flat">Flat</ion-select-option>
-                  <ion-select-option value="Shelf">Shelf</ion-select-option>
-                  <ion-select-option value="Tube">Tube</ion-select-option>
-                  <ion-select-option value="All">All Packages</ion-select-option>
-                </ion-select>
-              </ion-item>
+              <ion-button class="filter" (click)="packageFilter()">Package</ion-button>
             </div>
 
             <div>
-              <ion-item lines="none">
-                <ion-select value="All" placeholder="Courier" multiple="true">
-                  <ion-select-option value="Amazon">Amazon</ion-select-option>
-                  <ion-select-option value="UPS">UPS</ion-select-option>
-                  <ion-select-option value="Other">Other</ion-select-option>
-                  <ion-select-option value="All">All Couriers</ion-select-option>
-                </ion-select>
-              </ion-item>
+              <ion-button class="filter" (click)="courierFilter()">Courier</ion-button>
             </div>
 
             <div>
-              <ion-item lines="none">
-                <ion-select value="All" placeholder="Recipient" multiple="true">
-                  <ion-select-option value="Faculty">Faculty</ion-select-option>
-                  <ion-select-option value="Student">Student</ion-select-option>
-                  <ion-select-option value="Boxes">Boxes</ion-select-option>
-                  <ion-select-option value="All">All Recipients</ion-select-option>
-                </ion-select>
-              </ion-item>
+              <ion-button class="filter" (click)="recipientFilter()">Recipient</ion-button>
             </div>
+            
             <div>
               <ion-item lines="none">
                 <ion-select value="bar" interface="popover" placeholder="bar" (ionChange)="showChartData($event)">
