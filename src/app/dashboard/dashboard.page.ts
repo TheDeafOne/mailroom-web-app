@@ -166,7 +166,7 @@ export class dashboard implements OnInit {
     let month = new Date(tmpKDates[tmpKDates.length-1]).getMonth();
     this.nMonths(month+1);
   }
-  
+
   maxData(){
     clearChartXY();
     for (const val in createdOnData){
@@ -174,6 +174,21 @@ export class dashboard implements OnInit {
       chartDisplayDataOne.push(createdOnData[val].length);
     }
     this.replaceChart();
+  }
+
+  yearToDate(){
+    
+    this.nMonths(12);
+    let tmpKDates = Object.keys(createdOnData);
+    let latestDate = new Date(tmpKDates[tmpKDates.length-1]);
+    let currDate = new Date(labelsG[0]);
+    while (currDate.getDate() < latestDate.getDate()){
+      labelsG.splice(0,1);
+      chartDisplayDataOne.splice(0,1);
+      currDate = new Date(labelsG[0]);
+    }
+    this.replaceChart();
+
   }
   nMonths(monthNum){
     clearChartXY();
