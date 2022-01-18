@@ -28,6 +28,7 @@ function clearChartXY(){
 
 
 function defaultChartDisplay(){
+  
   let dayHours = {};
     chartDisplayDataOne = [];
     labelsG = ["6am", "7am", "8am", "9am", "10am", "11am", "12pm", "1pm", "2pm", "3pm", "4pm", "5pm", "6pm"];
@@ -102,7 +103,7 @@ export class dashboard implements OnInit {
     packageFilters = {"box": true, "flat": true, "shelf": true, "tube": true};
     courierFilters = {"amazon": true, "ups": true, "other": true};
     recipientFilters = {"student": true, "faculty": true, "box-range": true};
-  
+
     async dayFilter() {
 
         const alert = await this.alertController.create({
@@ -403,7 +404,7 @@ export class dashboard implements OnInit {
 
 
 
-  showChartData(event){
+  changeChartType(event){
     var value = event["detail"]["value"]
     this.chart.destroy();
     this.chartType = value;

@@ -51,7 +51,7 @@
             </div>
 
             <div>
-              <ion-button id="one-day-filter" class="filter" (click)="dayFilter()">Day</ion-button>
+              <ion-button id="one-day-filter" class="filter" (click)="dayFilter()" disabled="true">Day</ion-button>
             </div>
 
             <div>
@@ -68,7 +68,7 @@
             
             <div>
               <ion-item lines="none">
-                <ion-select value="bar" interface="popover" placeholder="bar" (ionChange)="showChartData($event)">
+                <ion-select value="bar" interface="popover" placeholder="bar" (ionChange)="changeChartType($event)">
                   <ion-select-option value="bar">Bar Chart</ion-select-option>
                   <ion-select-option value="line">Line Chart</ion-select-option>
                 </ion-select>
