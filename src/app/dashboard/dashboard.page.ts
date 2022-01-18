@@ -186,14 +186,16 @@ export class dashboard implements OnInit {
     let tmpKDates = Object.keys(createdOnData);
     let latestDate = new Date(tmpKDates[tmpKDates.length-1]);
     let currDate = new Date(labelsG[0]);
+    
+    if (currDate.getMonth() === latestDate.getMonth()){
+      while (currDate.getDate() < latestDate.getDate()){
+        labelsG.splice(0,1);
+        chartDisplayDataOne.splice(0,1);
+        currDate = new Date(labelsG[0]);
+      }
 
-    while (currDate.getDate() < latestDate.getDate()){
-      labelsG.splice(0,1);
-      chartDisplayDataOne.splice(0,1);
-      currDate = new Date(labelsG[0]);
+      this.replaceChart();
     }
-    this.replaceChart();
-
   }
   nMonths(monthNum){
     clearChartXY();
@@ -225,7 +227,7 @@ export class dashboard implements OnInit {
     (<HTMLInputElement> document.getElementById("one-day-filter")).disabled = false;
     this.chart.destroy();
     for (let i = 0; i < labelsG.length; i++){
-      labelsG[i] = labelsG[i].substring(4,10);
+      labelsG[i] = labelsG[i];
     }
     this.createChart();
   }
