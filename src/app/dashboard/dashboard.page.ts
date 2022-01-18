@@ -4,19 +4,73 @@ import { MenuController, AlertController } from '@ionic/angular';
 
 import data from 'src/assets/data/test-data.json';
 
-var daysLong = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+var daysLong = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 var createdOnData: any = {};
 var chartDisplayDataOne = [];
 var labelsG = [];
+var dayFilters = {"monday": true, "tuesday": true, "wednesday": true, "thursday": true, "friday": true, "saturday": true};
+var packageFilters = {"box": true, "flat": true, "shelf": true, "tube": true};
+var courierFilters = {"amazon": true, "ups": true, "other": true};
+var recipientFilters = {"student": true, "faculty": true, "box-range": true};
 
 
 function sortStudData() {
+  createdOnData = {};
+
   for(const inEl of data){
     let cDate: string = new Date(inEl["CreatedOn"]).toDateString();
-    if (cDate in createdOnData){
-      createdOnData[cDate].push(inEl);
-    } else {
-      createdOnData[cDate] = [inEl];
+    let day = daysLong[new Date(inEl["CreatedOn"]).getDay()];
+
+    let pckg = "box";
+    if (inEl["ContainerType"] !== "NA"){
+      if (inEl["ContainerType"] === "Tube"){
+        pckg = "tube"
+      } else {
+        pckg = "flat";
+      }
+    } else if (inEl["Shelf"] != null){
+      pckg = "shelf"
+    } 
+
+    let courier = "ups";
+    let barcode = inEl["Barcode"];
+    if (barcode != null){
+      if (barcode.substring(0,3) === "TBA"){
+        courier = "amazon";
+      } else if (barcode.replace(/[^a-zA-Z]+/g, '').length != barcode.length){
+        courier = "other";
+      }
+    }
+
+    let recipient = "student"
+    if (inEl["Package"] === "FAC" || inEl["Package"] === "fac"){
+      recipient = "faculty";
+    }
+
+    let filterFlag = true;
+
+    if (!dayFilters[day]){
+      filterFlag = false;
+    }
+    if (!packageFilters[pckg]){
+      filterFlag = false;
+    }
+    if (!courierFilters[courier]){
+      filterFlag = false;
+    }
+    if (!recipientFilters[recipient]){
+      filterFlag = false;
+    }
+
+
+    // console.log(filterFlag);
+    
+    if (filterFlag){
+      if (cDate in createdOnData){
+        createdOnData[cDate].push(inEl);
+      } else {
+        createdOnData[cDate] = [inEl];
+      }
     }
   }
 }
@@ -26,34 +80,36 @@ function clearChartXY(){
   chartDisplayDataOne = [];
 }
 
+function od(){
+  console.log("one day function");
+}
 
 function defaultChartDisplay(){
-  
   let dayHours = {};
-    chartDisplayDataOne = [];
-    labelsG = ["6am", "7am", "8am", "9am", "10am", "11am", "12pm", "1pm", "2pm", "3pm", "4pm", "5pm", "6pm"];
+  chartDisplayDataOne = [];
+  labelsG = ["6am", "7am", "8am", "9am", "10am", "11am", "12pm", "1pm", "2pm", "3pm", "4pm", "5pm", "6pm"];
 
-    // get latest day
-    let tmpKDates = Object.keys(createdOnData);
-    let tDay = createdOnData[tmpKDates[tmpKDates.length-1]];
-    // extract data from 
-    for (const val in tDay){
-      let time = new Date(tDay[val]["CreatedOn"]).getHours();
-      if (time in dayHours){
-        dayHours[time].push(tDay[val]);
-      } else {
-        dayHours[time] = [tDay[val]];
-      }
+  // get latest day
+  let tmpKDates = Object.keys(createdOnData);
+  let tDay = createdOnData[tmpKDates[tmpKDates.length-1]];
+  // extract data from 
+  for (const val in tDay){
+    let time = new Date(tDay[val]["CreatedOn"]).getHours();
+    if (time in dayHours){
+      dayHours[time].push(tDay[val]);
+    } else {
+      dayHours[time] = [tDay[val]];
     }
-    // change display data
-    for (const val in labelsG){
-      let time = (Number(val.substring(0,2))+6);
-      if (time in dayHours){
-        chartDisplayDataOne.push(dayHours[time].length)
-      } else {
-        chartDisplayDataOne.push(0);
-      }
+  }
+  // change display data
+  for (const val in labelsG){
+    let time = (Number(val.substring(0,2))+6);
+    if (time in dayHours){
+      chartDisplayDataOne.push(dayHours[time].length)
+    } else {
+      chartDisplayDataOne.push(0);
     }
+  }
 }
 
 sortStudData();
@@ -74,6 +130,7 @@ export class dashboard implements OnInit {
   chart: any;
   colorArray: any;
   constructor(private menu: MenuController, public alertController: AlertController) {}
+  currentChartTimeRange: () => void = defaultChartDisplay;
 
 
 
@@ -96,14 +153,6 @@ export class dashboard implements OnInit {
     this.menu.open('custom');
   }
 
- 
-
-
-    dayFilters = {"monday": true, "tuesday": true, "wednesday": true, "thursday": true, "friday": true, "saturday": true};
-    packageFilters = {"box": true, "flat": true, "shelf": true, "tube": true};
-    courierFilters = {"amazon": true, "ups": true, "other": true};
-    recipientFilters = {"student": true, "faculty": true, "box-range": true};
-
     async dayFilter() {
 
         const alert = await this.alertController.create({
@@ -116,9 +165,9 @@ export class dashboard implements OnInit {
               label: 'Monday',
               value: 'monday',
               handler: () => {
-                this.dayFilters["monday"] = !this.dayFilters["monday"];
+                dayFilters["monday"] = !dayFilters["monday"];
               },
-              checked: this.dayFilters["monday"]
+              checked: dayFilters["monday"]
             },
     
             {
@@ -127,9 +176,9 @@ export class dashboard implements OnInit {
               label: 'Tuesday',
               value: 'tuesday',
               handler: () => {
-                this.dayFilters["tuesday"] = !this.dayFilters["tuesday"];
+                dayFilters["tuesday"] = !dayFilters["tuesday"];
               },
-              checked: this.dayFilters["tuesday"]
+              checked: dayFilters["tuesday"]
             },
     
             {
@@ -138,9 +187,9 @@ export class dashboard implements OnInit {
               label: 'Wednesday',
               value: 'wednesday',
               handler: () => {
-                this.dayFilters["wednesday"] = !this.dayFilters["wednesday"];
+                dayFilters["wednesday"] = !dayFilters["wednesday"];
               },
-              checked: this.dayFilters["wednesday"]
+              checked: dayFilters["wednesday"]
             },
     
             {
@@ -149,9 +198,9 @@ export class dashboard implements OnInit {
               label: 'Thursday',
               value: 'thursday',
               handler: () => {
-                this.dayFilters["thursday"] = !this.dayFilters["thursday"];
+                dayFilters["thursday"] = !dayFilters["thursday"];
               },
-              checked: this.dayFilters["thursday"]
+              checked: dayFilters["thursday"]
             },
     
             {
@@ -160,9 +209,9 @@ export class dashboard implements OnInit {
               label: 'Friday',
               value: 'thursday',
               handler: () => {
-                this.dayFilters["friday"] = !this.dayFilters["friday"];
+                dayFilters["friday"] = !dayFilters["friday"];
               },
-              checked: this.dayFilters["friday"]
+              checked: dayFilters["friday"]
             },
     
             {
@@ -171,9 +220,9 @@ export class dashboard implements OnInit {
               label: 'Saturday',
               value: 'saturday',
               handler: (blah) => {
-                this.dayFilters["saturday"] = !this.dayFilters["saturday"];
+                dayFilters["saturday"] = !dayFilters["saturday"];
               },
-              checked: this.dayFilters["saturday"]
+              checked: dayFilters["saturday"]
             }
           ],
           buttons: [
@@ -181,22 +230,17 @@ export class dashboard implements OnInit {
               text: 'Select All',
               cssClass: 'filter-button',
               handler: (blah) => {
-                for (let i in this.dayFilters){
-                  this.dayFilters[i] = true;
-                }
+                
               }
             },
             {
               text: 'Ok',
               cssClass: 'filter-button',
               handler: (blah) => {
+                sortStudData();
                 clearChartXY();
-                for (const val in createdOnData){
-                  labelsG.push(val);
-                  chartDisplayDataOne.push(createdOnData[val].length);
-                }
-                
-                this.replaceChart();
+                this.currentChartTimeRange();
+                this.createChart();
               }
             }, 
             
@@ -217,9 +261,9 @@ export class dashboard implements OnInit {
               label: 'Box',
               value: 'box',
               handler: () => {
-                this.packageFilters["box"] = !this.packageFilters["box"];
+                packageFilters["box"] = !packageFilters["box"];
               },
-              checked: this.packageFilters["box"]
+              checked: packageFilters["box"]
             },
     
             {
@@ -228,9 +272,9 @@ export class dashboard implements OnInit {
               label: 'Flat',
               value: 'flat',
               handler: () => {
-                this.packageFilters["flat"] = !this.packageFilters["flat"];
+                packageFilters["flat"] = !packageFilters["flat"];
               },
-              checked: this.packageFilters["flat"]
+              checked: packageFilters["flat"]
             },
     
             {
@@ -239,9 +283,9 @@ export class dashboard implements OnInit {
               label: 'Shelf',
               value: 'shelf',
               handler: () => {
-                this.packageFilters["shelf"] = !this.packageFilters["shelf"];
+                packageFilters["shelf"] = !packageFilters["shelf"];
               },
-              checked: this.packageFilters["shelf"]
+              checked: packageFilters["shelf"]
             },
     
             {
@@ -250,9 +294,9 @@ export class dashboard implements OnInit {
               label: 'Tube',
               value: 'tube',
               handler: () => {
-                this.packageFilters["tube"] = !this.packageFilters["tube"];
+                packageFilters["tube"] = !packageFilters["tube"];
               },
-              checked: this.packageFilters["tube"]
+              checked: packageFilters["tube"]
             }
           ],
           buttons: [
@@ -260,8 +304,8 @@ export class dashboard implements OnInit {
               text: 'Select All',
               cssClass: 'filter-button',
               handler: (blah) => {
-                for (let i in this.packageFilters){
-                  this.packageFilters[i] = true;
+                for (let i in packageFilters){
+                  packageFilters[i] = true;
                 }
               }
             },
@@ -288,9 +332,9 @@ export class dashboard implements OnInit {
               label: 'Amazon',
               value: 'amazon',
               handler: () => {
-                this.courierFilters["amazon"] = !this.courierFilters["amazon"];
+                courierFilters["amazon"] = !courierFilters["amazon"];
               },
-              checked: this.courierFilters["amazon"]
+              checked: courierFilters["amazon"]
             },
     
             {
@@ -299,9 +343,9 @@ export class dashboard implements OnInit {
               label: 'UPS',
               value: 'ups',
               handler: () => {
-                this.courierFilters["ups"] = !this.courierFilters["ups"];
+                courierFilters["ups"] = !courierFilters["ups"];
               },
-              checked: this.courierFilters["ups"]
+              checked: courierFilters["ups"]
             },
     
             {
@@ -310,9 +354,9 @@ export class dashboard implements OnInit {
               label: 'Other',
               value: 'other',
               handler: () => {
-                this.courierFilters["other"] = !this.courierFilters["other"];
+                courierFilters["other"] = !courierFilters["other"];
               },
-              checked: this.courierFilters["other"]
+              checked: courierFilters["other"]
             }
           ],
           buttons: [
@@ -320,8 +364,8 @@ export class dashboard implements OnInit {
               text: 'Select All',
               cssClass: 'filter-button',
               handler: (blah) => {
-                for (let i in this.courierFilters){
-                  this.courierFilters[i] = true;
+                for (let i in courierFilters){
+                  courierFilters[i] = true;
                 }
               }
             },
@@ -347,9 +391,9 @@ export class dashboard implements OnInit {
               label: 'Student',
               value: 'student',
               handler: () => {
-                this.courierFilters["student"] = !this.courierFilters["student"];
+                recipientFilters["student"] = !recipientFilters["student"];
               },
-              checked: this.courierFilters["student"]
+              checked: recipientFilters["student"]
             },
     
             {
@@ -358,9 +402,9 @@ export class dashboard implements OnInit {
               label: 'Faculty',
               value: 'faculty',
               handler: () => {
-                this.courierFilters["faculty"] = !this.courierFilters["faculty"];
+                recipientFilters["faculty"] = !recipientFilters["faculty"];
               },
-              checked: this.courierFilters["faculty"]
+              checked: recipientFilters["faculty"]
             },
     
             {
@@ -369,9 +413,9 @@ export class dashboard implements OnInit {
               label: 'Box Range',
               value: 'box-range',
               handler: () => {
-                this.courierFilters["box-range"] = !this.courierFilters["box-range"];
+                recipientFilters["box-range"] = !recipientFilters["box-range"];
               },
-              checked: this.courierFilters["box-range"]
+              checked: recipientFilters["box-range"]
             }
           ],
           buttons: [
@@ -379,8 +423,8 @@ export class dashboard implements OnInit {
               text: 'Select All',
               cssClass: 'filter-button',
               handler: (blah) => {
-                for (let i in this.courierFilters){
-                  this.courierFilters[i] = true;
+                for (let i in recipientFilters){
+                  recipientFilters[i] = true;
                 }
               }
             },
@@ -419,6 +463,7 @@ export class dashboard implements OnInit {
 
   // Visualizing data for one day
   oneDay(){
+    this.currentChartTimeRange = this.oneDay;
     (<HTMLInputElement> document.getElementById("one-day-filter")).disabled = true;
     clearChartXY();
     defaultChartDisplay();
@@ -427,6 +472,7 @@ export class dashboard implements OnInit {
   }
 
   oneWeek() {
+    this.currentChartTimeRange = this.oneWeek;
     labelsG = [];
     chartDisplayDataOne = [];
     let tmpKDates = Object.keys(createdOnData)
@@ -439,13 +485,25 @@ export class dashboard implements OnInit {
     this.replaceChart();
   }
 
+  oneMonth(){
+    this.currentChartTimeRange = this.oneMonth;
+    this.nMonths(1);
+  }
+
+  threeMonths(){
+    this.currentChartTimeRange = this.threeMonths;
+    this.nMonths(3);
+  }
+
   currentYear(){
+    this.currentChartTimeRange = this.currentYear;
     let tmpKDates = Object.keys(createdOnData);
     let month = new Date(tmpKDates[tmpKDates.length-1]).getMonth();
     this.nMonths(month+1);
   }
 
   maxData(){
+    this.currentChartTimeRange = this.maxData;
     clearChartXY();
     for (const val in createdOnData){
       labelsG.push(val);
@@ -455,6 +513,7 @@ export class dashboard implements OnInit {
   }
 
   yearToDate(){
+    this.currentChartTimeRange = this.yearToDate;
     this.nMonths(12);
     let tmpKDates = Object.keys(createdOnData);
     let latestDate = new Date(tmpKDates[tmpKDates.length-1]);
@@ -470,6 +529,7 @@ export class dashboard implements OnInit {
       this.replaceChart();
     }
   }
+
   nMonths(monthNum){
     clearChartXY();
     let tmpKDates = Object.keys(createdOnData);
