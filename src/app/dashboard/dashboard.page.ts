@@ -44,36 +44,7 @@ function clearChartXY(){
 }
 
 
-function defaultChartDisplay(){
-  let dayHours = {};
-    chartDisplayDataOne = [];
-    labelsG = ["6am", "7am", "8am", "9am", "10am", "11am", "12pm", "1pm", "2pm", "3pm", "4pm", "5pm", "6pm"];
-
-    // get latest day
-    let tmpKDates = Object.keys(createdOnData);
-    let tDay = createdOnData[tmpKDates[tmpKDates.length-1]];
-    // extract data from 
-    for (const val in tDay){
-      let time = new Date(tDay[val]["CreatedOn"]).getHours();
-      if (time in dayHours){
-        dayHours[time].push(tDay[val]);
-      } else {
-        dayHours[time] = [tDay[val]];
-      }
-    }
-    // change display data
-    for (const val in labelsG){
-      let time = (Number(val.substring(0,2))+6);
-      if (time in dayHours){
-        chartDisplayDataOne.push(dayHours[time].length)
-      } else {
-        chartDisplayDataOne.push(0);
-      }
-    }
-}
-
 sortStudData();
-defaultChartDisplay();
 
 Chart.register(...registerables)
 
@@ -94,6 +65,7 @@ export class dashboard implements OnInit {
 
 
   ngOnInit() {
+    this.oneDay();
     document.getElementById("entered").innerText = enteredValue.toString();
     document.getElementById("signed").innerText = signedValue.toString();
     document.getElementById("inSystem").innerText = (enteredValue-signedValue).toString();
@@ -437,7 +409,31 @@ export class dashboard implements OnInit {
   oneDay(){
     (<HTMLInputElement> document.getElementById("one-day-filter")).disabled = true;
     clearChartXY();
-    defaultChartDisplay();
+    let dayHours = {};
+    chartDisplayDataOne = [];
+    labelsG = ["6am", "7am", "8am", "9am", "10am", "11am", "12pm", "1pm", "2pm", "3pm", "4pm", "5pm", "6pm"];
+
+    // get latest day
+    let tmpKDates = Object.keys(createdOnData);
+    let tDay = createdOnData[tmpKDates[tmpKDates.length-1]];
+    // extract data from 
+    for (const val in tDay){
+      let time = new Date(tDay[val]["CreatedOn"]).getHours();
+      if (time in dayHours){
+        dayHours[time].push(tDay[val]);
+      } else {
+        dayHours[time] = [tDay[val]];
+      }
+    }
+    // change display data
+    for (const val in labelsG){
+      let time = (Number(val.substring(0,2))+6);
+      if (time in dayHours){
+        chartDisplayDataOne.push(dayHours[time].length)
+      } else {
+        chartDisplayDataOne.push(0);
+      }
+    }
     this.chart.destroy();
     this.createChart();
   }
