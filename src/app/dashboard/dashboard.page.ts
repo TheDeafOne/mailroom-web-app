@@ -230,7 +230,9 @@ export class dashboard implements OnInit {
               text: 'Select All',
               cssClass: 'filter-button',
               handler: (blah) => {
-                
+                for (let i in dayFilters){
+                  dayFilters[i] = true;
+                }
               }
             },
             {
