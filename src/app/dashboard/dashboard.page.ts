@@ -233,16 +233,14 @@ export class dashboard implements OnInit {
                 for (let i in dayFilters){
                   dayFilters[i] = true;
                 }
+                this.applyFilterOptions();
               }
             },
             {
               text: 'Ok',
               cssClass: 'filter-button',
               handler: (blah) => {
-                sortStudData();
-                clearChartXY();
-                this.currentChartTimeRange();
-                this.createChart();
+                this.applyFilterOptions();
               }
             }, 
             
@@ -309,10 +307,15 @@ export class dashboard implements OnInit {
                 for (let i in packageFilters){
                   packageFilters[i] = true;
                 }
+                this.applyFilterOptions();
               }
             },
             {
-              text: 'Ok'
+              text: 'Ok',
+              cssClass: 'filter-button',
+              handler: (blah) => {
+                this.applyFilterOptions();
+              }
             }, 
             
           ]
@@ -369,10 +372,15 @@ export class dashboard implements OnInit {
                 for (let i in courierFilters){
                   courierFilters[i] = true;
                 }
+                this.applyFilterOptions();
               }
             },
             {
-              text: 'Ok'
+              text: 'Ok',
+              cssClass: 'filter-button',
+              handler: (blah) => {
+                this.applyFilterOptions();
+              }
             }, 
             
           ]
@@ -428,10 +436,15 @@ export class dashboard implements OnInit {
                 for (let i in recipientFilters){
                   recipientFilters[i] = true;
                 }
+                this.applyFilterOptions();
               }
             },
             {
-              text: 'Ok'
+              text: 'Ok',
+              cssClass: 'filter-button',
+              handler: (blah) => {
+                this.applyFilterOptions();
+              }
             }, 
             
           ]
@@ -441,9 +454,11 @@ export class dashboard implements OnInit {
       }
   
 
-  filterTest(){
-
-    
+  applyFilterOptions(){
+    sortStudData();
+    clearChartXY();
+    this.currentChartTimeRange();
+    this.createChart();
   }
 
  
