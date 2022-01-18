@@ -3,10 +3,10 @@ import { AlertController } from '@ionic/angular';
 export class filters{
     constructor(public alertController: AlertController) { }
 
-    dayFilters = new Array(6).fill(true);
-    packageFilters = new Array(4).fill(true);
-    courierFilters = new Array(3).fill(true);
-
+    dayFilters = {"monday": true, "tuesday": true, "wednesday": true, "thursday": true, "friday": true, "saturday": true};
+    packageFilters = {"box": true, "flat": true, "shelf": true, "tube": true};
+    courierFilters = {"amazon": true, "ups": true, "other": true};
+    recipientFilters = {"student": true, "faculty": true, "box-range": true};
   
     async dayFilter() {
 
@@ -20,9 +20,9 @@ export class filters{
               label: 'Monday',
               value: 'monday',
               handler: () => {
-                this.dayFilters[0] = !this.dayFilters[0];
+                this.dayFilters["monday"] = !this.dayFilters["monday"];
               },
-              checked: this.dayFilters[0]
+              checked: this.dayFilters["monday"]
             },
     
             {
@@ -31,9 +31,9 @@ export class filters{
               label: 'Tuesday',
               value: 'tuesday',
               handler: () => {
-                this.dayFilters[1] = !this.dayFilters[1];
+                this.dayFilters["tuesday"] = !this.dayFilters["tuesday"];
               },
-              checked: this.dayFilters[1]
+              checked: this.dayFilters["tuesday"]
             },
     
             {
@@ -42,9 +42,9 @@ export class filters{
               label: 'Wednesday',
               value: 'wednesday',
               handler: () => {
-                this.dayFilters[2] = !this.dayFilters[2];
+                this.dayFilters["wednesday"] = !this.dayFilters["wednesday"];
               },
-              checked: this.dayFilters[2]
+              checked: this.dayFilters["wednesday"]
             },
     
             {
@@ -53,9 +53,9 @@ export class filters{
               label: 'Thursday',
               value: 'thursday',
               handler: () => {
-                this.dayFilters[3] = !this.dayFilters[3];
+                this.dayFilters["thursday"] = !this.dayFilters["thursday"];
               },
-              checked: this.dayFilters[3]
+              checked: this.dayFilters["thursday"]
             },
     
             {
@@ -64,9 +64,9 @@ export class filters{
               label: 'Friday',
               value: 'thursday',
               handler: () => {
-                this.dayFilters[4] = !this.dayFilters[4];
+                this.dayFilters["friday"] = !this.dayFilters["friday"];
               },
-              checked: this.dayFilters[4]
+              checked: this.dayFilters["friday"]
             },
     
             {
@@ -75,9 +75,9 @@ export class filters{
               label: 'Saturday',
               value: 'saturday',
               handler: (blah) => {
-                this.dayFilters[5] = !this.dayFilters[5];
+                this.dayFilters["saturday"] = !this.dayFilters["saturday"];
               },
-              checked: this.dayFilters[5]
+              checked: this.dayFilters["saturday"]
             }
           ],
           buttons: [
@@ -85,7 +85,7 @@ export class filters{
               text: 'Select All',
               cssClass: 'filter-button',
               handler: (blah) => {
-                for (let i = 0; i < this.dayFilters.length; i++){
+                for (let i in this.dayFilters){
                   this.dayFilters[i] = true;
                 }
               }
@@ -111,9 +111,9 @@ export class filters{
               label: 'Box',
               value: 'box',
               handler: () => {
-                this.packageFilters[0] = !this.packageFilters[0];
+                this.packageFilters["box"] = !this.packageFilters["box"];
               },
-              checked: this.packageFilters[0]
+              checked: this.packageFilters["box"]
             },
     
             {
@@ -122,9 +122,9 @@ export class filters{
               label: 'Flat',
               value: 'flat',
               handler: () => {
-                this.packageFilters[1] = !this.packageFilters[1];
+                this.packageFilters["flat"] = !this.packageFilters["flat"];
               },
-              checked: this.packageFilters[1]
+              checked: this.packageFilters["flat"]
             },
     
             {
@@ -133,9 +133,9 @@ export class filters{
               label: 'Shelf',
               value: 'shelf',
               handler: () => {
-                this.packageFilters[2] = !this.packageFilters[2];
+                this.packageFilters["shelf"] = !this.packageFilters["shelf"];
               },
-              checked: this.packageFilters[2]
+              checked: this.packageFilters["shelf"]
             },
     
             {
@@ -144,9 +144,9 @@ export class filters{
               label: 'Tube',
               value: 'tube',
               handler: () => {
-                this.packageFilters[3] = !this.packageFilters[3];
+                this.packageFilters["tube"] = !this.packageFilters["tube"];
               },
-              checked: this.packageFilters[3]
+              checked: this.packageFilters["tube"]
             }
           ],
           buttons: [
@@ -154,7 +154,7 @@ export class filters{
               text: 'Select All',
               cssClass: 'filter-button',
               handler: (blah) => {
-                for (let i = 0; i < this.packageFilters.length; i++){
+                for (let i in this.packageFilters){
                   this.packageFilters[i] = true;
                 }
               }
@@ -182,9 +182,9 @@ export class filters{
               label: 'Amazon',
               value: 'amazon',
               handler: () => {
-                this.courierFilters[0] = !this.courierFilters[0];
+                this.courierFilters["amazon"] = !this.courierFilters["amazon"];
               },
-              checked: this.courierFilters[0]
+              checked: this.courierFilters["amazon"]
             },
     
             {
@@ -193,9 +193,9 @@ export class filters{
               label: 'UPS',
               value: 'ups',
               handler: () => {
-                this.courierFilters[1] = !this.courierFilters[1];
+                this.courierFilters["ups"] = !this.courierFilters["ups"];
               },
-              checked: this.courierFilters[1]
+              checked: this.courierFilters["ups"]
             },
     
             {
@@ -204,9 +204,9 @@ export class filters{
               label: 'Other',
               value: 'other',
               handler: () => {
-                this.courierFilters[2] = !this.courierFilters[2];
+                this.courierFilters["other"] = !this.courierFilters["other"];
               },
-              checked: this.courierFilters[2]
+              checked: this.courierFilters["other"]
             }
           ],
           buttons: [
@@ -214,7 +214,7 @@ export class filters{
               text: 'Select All',
               cssClass: 'filter-button',
               handler: (blah) => {
-                for (let i = 0; i < this.courierFilters.length; i++){
+                for (let i in this.courierFilters){
                   this.courierFilters[i] = true;
                 }
               }
@@ -241,9 +241,9 @@ export class filters{
               label: 'Student',
               value: 'student',
               handler: () => {
-                this.courierFilters[0] = !this.courierFilters[0];
+                this.courierFilters["student"] = !this.courierFilters["student"];
               },
-              checked: this.courierFilters[0]
+              checked: this.courierFilters["student"]
             },
     
             {
@@ -252,9 +252,9 @@ export class filters{
               label: 'Faculty',
               value: 'faculty',
               handler: () => {
-                this.courierFilters[1] = !this.courierFilters[1];
+                this.courierFilters["faculty"] = !this.courierFilters["faculty"];
               },
-              checked: this.courierFilters[1]
+              checked: this.courierFilters["faculty"]
             },
     
             {
@@ -263,9 +263,9 @@ export class filters{
               label: 'Box Range',
               value: 'box-range',
               handler: () => {
-                this.courierFilters[2] = !this.courierFilters[2];
+                this.courierFilters["box-range"] = !this.courierFilters["box-range"];
               },
-              checked: this.courierFilters[2]
+              checked: this.courierFilters["box-range"]
             }
           ],
           buttons: [
@@ -273,7 +273,7 @@ export class filters{
               text: 'Select All',
               cssClass: 'filter-button',
               handler: (blah) => {
-                for (let i = 0; i < this.courierFilters.length; i++){
+                for (let i in this.courierFilters){
                   this.courierFilters[i] = true;
                 }
               }
