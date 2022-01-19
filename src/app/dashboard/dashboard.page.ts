@@ -1,8 +1,11 @@
 import { Component, ViewChild, OnInit } from '@angular/core';
 import { Chart, registerables } from 'chart.js';
 import { MenuController, AlertController } from '@ionic/angular';
-
+import zoomPlugin from 'chartjs-plugin-zoom';
 import data from 'src/assets/data/test-data.json';
+
+Chart.register(zoomPlugin);
+Chart.register(...registerables)
 
 var daysLong = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 var createdOnData: any = {};
@@ -80,9 +83,6 @@ function clearChartXY(){
   chartDisplayDataOne = [];
 }
 
-function od(){
-  console.log("one day function");
-}
 
 function defaultChartDisplay(){
   let dayHours = {};
@@ -114,8 +114,6 @@ function defaultChartDisplay(){
 
 sortStudData();
 defaultChartDisplay();
-
-Chart.register(...registerables)
 
 
 @Component({
@@ -542,7 +540,6 @@ export class dashboard implements OnInit {
         chartDisplayDataOne.splice(0,1);
         currDate = new Date(labelsG[0]);
       }
-
       this.replaceChart();
     }
   }
@@ -609,9 +606,23 @@ export class dashboard implements OnInit {
       },
       options: {
         plugins: {
+          zoom: {
+            pan: {
+              enabled: true,
+              mode: 'x',
+              modifierKey: 'ctrl',
+            },
+            zoom: {
+              drag: {
+                enabled: true
+              },
+              mode: 'x'
+            }
+          },
           legend: {
             display: false,
           }
+        
         },
         responsive: true,
         maintainAspectRatio: false,
@@ -622,5 +633,6 @@ export class dashboard implements OnInit {
         }
       }
     });
+    
   }
 }
