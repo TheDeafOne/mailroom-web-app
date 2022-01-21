@@ -9,8 +9,12 @@ Chart.register(...registerables)
 
 var daysLong = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 var createdOnData: any = {};
+var signedOnData: any = {};
+var enteredVolume = 0;
+var signedVolume = 0;
 var chartDisplayDataOne = [];
 var labelsG = [];
+// filter dictionaries
 var dayFilters = {"monday": true, "tuesday": true, "wednesday": true, "thursday": true, "friday": true, "saturday": true};
 var packageFilters = {"box": true, "flat": true, "shelf": true, "tube": true};
 var courierFilters = {"amazon": true, "ups": true, "other": true};
@@ -21,6 +25,11 @@ function sortStudData() {
   createdOnData = {};
 
   for(const inEl of data){
+    // volume data
+    enteredVolume += 1;
+    if (inEl["SignedOn"] != null){
+      signedVolume += 1;
+    }
     let cDate: string = new Date(inEl["CreatedOn"]).toDateString();
     let day = daysLong[new Date(inEl["CreatedOn"]).getDay()];
 
@@ -38,7 +47,8 @@ function sortStudData() {
     let courier = "ups";
     let barcode = inEl["Barcode"];
     if (barcode != null){
-      if (barcode.substring(0,3) === "TBA"){
+      let pckgBarID = barcode.substring(0,3);
+      if (pckgBarID === "TBA" || pckgBarID === "TBA"){
         courier = "amazon";
       } else if (barcode.replace(/[^a-zA-Z]+/g, '').length != barcode.length){
         courier = "other";
@@ -66,7 +76,6 @@ function sortStudData() {
     }
 
 
-    // console.log(filterFlag);
     
     if (filterFlag){
       if (cDate in createdOnData){
@@ -133,9 +142,9 @@ export class dashboard implements OnInit {
 
 
   ngOnInit() {
-    // document.getElementById("entered").innerText = enteredValue.toString();
-    // document.getElementById("signed").innerText = signedValue.toString();
-    // document.getElementById("inSystem").innerText = (enteredValue-signedValue).toString();
+    document.getElementById("entered").innerText = enteredVolume.toString();
+    document.getElementById("signed").innerText = signedVolume.toString();
+    document.getElementById("inSystem").innerText = (enteredVolume-signedVolume).toString();
     
     // console.log(document.getElementById("dayFilter").children);
   }
@@ -464,10 +473,10 @@ export class dashboard implements OnInit {
 
 
   changeChartType(event){
-    var value = event["detail"]["value"]
-    this.chart.destroy();
-    this.chartType = value;
-    this.createChart();
+    this.chartType = event["detail"]["value"];
+    console.log(this.chartType);
+    this.chart.type = this.chartType;
+    this.chart.update();
   }
 
   ionViewDidEnter() {
