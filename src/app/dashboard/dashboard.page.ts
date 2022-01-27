@@ -17,11 +17,13 @@ var labelsG = [];
 // filter dictionaries
 var dayFilters = {"monday": true, "tuesday": true, "wednesday": true, "thursday": true, "friday": true, "saturday": true};
 var packageFilters = {"box": true, "flat": true, "shelf": true, "tube": true};
-var courierFilters = {"amazon": true, "ups": true, "other": true};
+var courierFilters = {"amazon": true, "ups": true, "fedex": true, "usps": true, "lasership": true, "other": true};
 var recipientFilters = {"student": true, "faculty": true, "box-range": true};
 
 
 function sortStudData() {
+  enteredVolume = 0;
+  signedVolume = 0;
   createdOnData = {};
 
   for(const inEl of data){
@@ -44,15 +46,34 @@ function sortStudData() {
       pckg = "shelf"
     } 
 
-    let courier = "ups";
+    let courier = "other";
     let barcode = inEl["Barcode"];
+
     if (barcode != null){
-      let pckgBarID = barcode.substring(0,3);
-      if (pckgBarID === "TBA" || pckgBarID === "TBA"){
+      // check tracking numbers via regex testing
+      //ups
+      if (/\b(1Z ?[0-9A-Z]{3} ?[0-9A-Z]{3} ?[0-9A-Z]{2} ?[0-9A-Z]{4} ?[0-9A-Z]{3} ?[0-9A-Z]|[\dT]\d\d\d ?\d\d\d\d ?\d\d\d)\b/.test(barcode)){
+        courier = "ups";
+        //fedex
+      } else if (/(\b96\d{20}\b)|(\b\d{15}\b)|(\b\d{12}\b)/.test(barcode) ||
+      /\b((98\d\d\d\d\d?\d\d\d\d|98\d\d) ?\d\d\d\d ?\d\d\d\d( ?\d\d\d)?)\b/.test(barcode) ||
+      /^[0-9]{15}$/.test(barcode)){
+        courier = "fedex";
+        //usps
+      } else if (/(\b\d{30}\b)|(\b91\d+\b)|(\b\d{20}\b)/.test(barcode) ||
+      /^E\D{1}\d{9}\D{2}$|^9\d{15,21}$/.test(barcode) ||
+      /^91[0-9]+$/.test(barcode) ||
+      /^[A-Za-z]{2}[0-9]+US$/.test(barcode)) {
+        courier = "usps";
+        //amazon
+      } else if (barcode.substring(0,3) === "TBA" || barcode.substring(0,3) === "tba"){
         courier = "amazon";
-      } else if (barcode.replace(/[^a-zA-Z]+/g, '').length != barcode.length){
-        courier = "other";
-      }
+        //lasership
+      } else if ((/[a-zA-Z]{2}\d{8}/.test(barcode)
+      || /\d{1}[a-zA-Z]{2}\d{17}/.test(barcode)) && barcode !== "amazon"){
+        courier = "lasership";
+      } 
+
     }
 
     let recipient = "student"
@@ -142,11 +163,14 @@ export class dashboard implements OnInit {
 
 
   ngOnInit() {
+    this.htmlChanges();
+    
+    // console.log(document.getElementById("dayFilter").children);
+  }
+  htmlChanges(){
     document.getElementById("entered").innerText = enteredVolume.toString();
     document.getElementById("signed").innerText = signedVolume.toString();
     document.getElementById("inSystem").innerText = (enteredVolume-signedVolume).toString();
-    
-    // console.log(document.getElementById("dayFilter").children);
   }
   openFirst(){
     this.menu.enable(true,'first');
@@ -331,7 +355,7 @@ export class dashboard implements OnInit {
         await alert.present();
       }
 
-      
+   
       async courierFilter() {
     
         const alert = await this.alertController.create({
@@ -360,6 +384,37 @@ export class dashboard implements OnInit {
               checked: courierFilters["ups"]
             },
     
+            {
+              name: 'usps',
+              type: 'checkbox',
+              label: 'USPS',
+              value: 'usps',
+              handler: () => {
+                courierFilters["usps"] = !courierFilters["usps"];
+              },
+              checked: courierFilters["usps"]
+            },
+            {
+              name: 'fedex',
+              type: 'checkbox',
+              label: 'FedEx',
+              value: 'fedex',
+              handler: () => {
+                courierFilters["fedex"] = !courierFilters["fedex"];
+              },
+              checked: courierFilters["fedex"]
+            },
+
+            {
+              name: 'lasership',
+              type: 'checkbox',
+              label: 'LaserShip',
+              value: 'lasership',
+              handler: () => {
+                courierFilters["lasership"] = !courierFilters["lasership"];
+              },
+              checked: courierFilters["lasership"]
+            },
             {
               name: 'other',
               type: 'checkbox',
@@ -416,7 +471,7 @@ export class dashboard implements OnInit {
             {
               name: 'faculty',
               type: 'checkbox',
-              label: 'Faculty',
+              label: 'Faculty and Staff',
               value: 'faculty',
               handler: () => {
                 recipientFilters["faculty"] = !recipientFilters["faculty"];
@@ -464,12 +519,10 @@ export class dashboard implements OnInit {
   applyFilterOptions(){
     sortStudData();
     clearChartXY();
+    this.htmlChanges;
     this.currentChartTimeRange();
     this.createChart();
   }
-
- 
-
 
 
   changeChartType(event){
@@ -581,6 +634,7 @@ export class dashboard implements OnInit {
 
   replaceChart(){
     (<HTMLInputElement> document.getElementById("one-day-filter")).disabled = false;
+    this.htmlChanges();
     this.chart.destroy();
     for (let i = 0; i < labelsG.length; i++){
       labelsG[i] = labelsG[i];

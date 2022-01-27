@@ -1,43 +1,54 @@
 <ion-content>
   
   <ion-grid>
-    <ion-row justify-content-end>
+    <ion-row>
       <ion-col size="5">
-        
-        <ion-card id="raw-card" class="raw-card">
+        <div class="volume-card">
+          <ion-card>
+            <ion-card-header>
+              Package Overview
+            </ion-card-header>
+
+            <ion-card-content>
+              <div class="volume-container">
+                <div class="raw-div1">
+                  <h2>
+                    Entered
+                  </h2>  
+                  <h1 id="entered"></h1>
+                </div>
+
+                <div class="raw-div2">
+                  <h2>
+                    Signed
+                  </h2>
+                  <h1 id="signed"></h1>
+                </div>
+                
+                <div class="raw-div3">
+                  <h2>
+                    In System
+                  </h2>
+                  <h1 id="inSystem"></h1>
+                </div>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </div>
+      </ion-col>
+      
+      
+      <ion-col size="6">
+        <ion-card id="filtered-card" class="filtered-card">
           <ion-card-header>
-            Package Overview
+            Filtered Data
           </ion-card-header>
 
           <ion-card-content>
-            <div class="raw-container">
-              <div class="raw-div1">
-                <h2>
-                  Entered
-                </h2>  
-                <h1 id="entered"></h1>
-              </div>
-
-              <div class="raw-div2">
-                <h2>
-                  Signed
-                </h2>
-                <h1 id="signed"></h1>
-              </div>
-              
-              <div class="raw-div3">
-                <h2>
-                  In System
-                </h2>
-                <h1 id="inSystem"></h1>
-              </div>
-            </div>
+            
+           
           </ion-card-content>
         </ion-card>
-      </ion-col>
-      
-      <ion-col size="6">
-
       </ion-col>
     </ion-row>
 
