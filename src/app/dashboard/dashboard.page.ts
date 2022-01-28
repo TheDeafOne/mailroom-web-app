@@ -632,32 +632,77 @@ export class dashboard implements OnInit {
     this.replaceChart();
   }
 
+  
+  applyCustomDates(begin, end){
+    clearChartXY();
+    let currDate = new Date(begin);
+    currDate.setDate(currDate.getDate()+1);
+    let endDate = new Date(end);
+    endDate.setDate(endDate.getDate()+2);
+    
+    if (currDate.toISOString() <= endDate.toISOString()){
+      while (currDate < endDate){
+        labelsG.push(currDate.toDateString());
+        let dateString = currDate.toDateString();
+        if (dateString in createdOnData){
+          chartDisplayDataOne.push(createdOnData[currDate.toDateString()].length);
+        } else {
+          chartDisplayDataOne.push(0);
+        }
+        console.log(currDate.toDateString());
+        currDate.setDate(currDate.getDate() + 1);
+      }
+    } else if (currDate.toISOString() == endDate.toISOString()){
+      console.log("handle single day");
+    } else {
+      console.log("handle error message");
+    }
+    
+    this.replaceChart();
+  }
+
+  beginCDate = new Date().toISOString().split('T')[0];
+  endCDate = this.beginCDate;
   async customDates(){
-    let today = new Date().toISOString().split('T')[0];
+    let today = this.beginCDate;
     const alert = await this.alertController.create({
       cssClass: 'my-custom-class',
       header: 'Custom Range',
       inputs: [
         {
-          name: 'custom-date',
+          name: 'begin',
+          type: 'date',
+          min: '2020-01-01',
+          max: this.endCDate,
+          label: 'Begin',
+          value: this.beginCDate,
+          handler: (blah) => {
+            this.beginCDate = blah.value;
+          }
+        },
+        {
+          name: 'end',
           type: 'date',
           min: '2020-01-01',
           max: today,
-          label: 'Custom',
-          value: today
+          label: 'End',
+          value: this.endCDate,
+          handler: (blah) => {
+            this.endCDate = blah.value;
+          }
         }
       ],
       buttons: [
         {
           text: 'Cancel',
           handler: (blah) => {
-            
+            console.log(blah);
           }
         },
         {
           text: 'Ok',
           handler: (blah) => {
-            console.log(blah["custom-date"]);
+            this.applyCustomDates(blah["begin"], blah["end"]);
           }
         }, 
       ]
