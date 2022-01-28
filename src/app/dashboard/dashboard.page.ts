@@ -632,6 +632,41 @@ export class dashboard implements OnInit {
     this.replaceChart();
   }
 
+  async customDates(){
+    let today = new Date().toISOString().split('T')[0];
+    const alert = await this.alertController.create({
+      cssClass: 'my-custom-class',
+      header: 'Custom Range',
+      inputs: [
+        {
+          name: 'custom-date',
+          type: 'date',
+          min: '2020-01-01',
+          max: today,
+          label: 'Custom',
+          value: today
+        }
+      ],
+      buttons: [
+        {
+          text: 'Cancel',
+          handler: (blah) => {
+            
+          }
+        },
+        {
+          text: 'Ok',
+          handler: (blah) => {
+            console.log(blah["custom-date"]);
+          }
+        }, 
+      ]
+    });
+
+    await alert.present();
+  
+  }
+
   replaceChart(){
     (<HTMLInputElement> document.getElementById("one-day-filter")).disabled = false;
     this.htmlChanges();
@@ -696,6 +731,5 @@ export class dashboard implements OnInit {
         }
       }
     });
-    
   }
 }
