@@ -146,26 +146,27 @@ sortStudData();
 defaultChartDisplay();
 
 
+
+
 @Component({
   selector: 'app-dashboard',
   templateUrl: 'dashboard.page.html',
-  styleUrls: ['dashboard.page.scss']
+  styleUrls: ['dashboard.page.scss'],
 })
 
 export class dashboard implements OnInit {
   chartType: any = 'bar';
   @ViewChild('barChart') barChart;
+  
   chart: any;
   colorArray: any;
   constructor(private menu: MenuController, public alertController: AlertController) {}
   currentChartTimeRange: () => void = defaultChartDisplay;
 
 
-
   ngOnInit() {
     this.htmlChanges();
     
-    // console.log(document.getElementById("dayFilter").children);
   }
   htmlChanges(){
     document.getElementById("entered").innerText = enteredVolume.toString();
@@ -527,10 +528,10 @@ export class dashboard implements OnInit {
 
   changeChartType(event){
     this.chartType = event["detail"]["value"];
-    console.log(this.chartType);
     this.chart.type = this.chartType;
-    this.chart.update();
-  }
+    this.htmlChanges();
+    this.chart.destroy();
+    this.createChart();  }
 
   ionViewDidEnter() {
     this.createChart();
@@ -638,9 +639,11 @@ export class dashboard implements OnInit {
     let currDate = new Date(begin);
     currDate.setDate(currDate.getDate()+1);
     let endDate = new Date(end);
-    endDate.setDate(endDate.getDate()+2);
+    endDate.setDate(endDate.getDate()+1);
     
-    if (currDate.toISOString() <= endDate.toISOString()){
+    if (currDate.toISOString() < endDate.toISOString()){
+      console.log(currDate.toISOString());
+      console.log(endDate.toISOString());
       while (currDate < endDate){
         labelsG.push(currDate.toDateString());
         let dateString = currDate.toDateString();
@@ -649,11 +652,22 @@ export class dashboard implements OnInit {
         } else {
           chartDisplayDataOne.push(0);
         }
-        console.log(currDate.toDateString());
         currDate.setDate(currDate.getDate() + 1);
       }
     } else if (currDate.toISOString() == endDate.toISOString()){
-      console.log("handle single day");
+      console.log("one day");
+      if (!(currDate.toDateString() in createdOnData)){
+        createdOnData[currDate.toDateString()] = [];
+      }
+      let tmpKDates = Object.keys(createdOnData);
+      let tmp = createdOnData[tmpKDates[tmpKDates.length-1]];
+      createdOnData[tmpKDates[tmpKDates.length-1]] = createdOnData[currDate.toDateString()];
+      defaultChartDisplay();
+      createdOnData[tmpKDates[tmpKDates.length-1]] = tmp;
+  
+      
+  // TODO: cycle through display chart data and fix raw data
+
     } else {
       console.log("handle error message");
     }
@@ -663,7 +677,10 @@ export class dashboard implements OnInit {
 
   beginCDate = new Date().toISOString().split('T')[0];
   endCDate = this.beginCDate;
+
+
   async customDates(){
+
     let today = this.beginCDate;
     const alert = await this.alertController.create({
       cssClass: 'my-custom-class',
@@ -694,10 +711,7 @@ export class dashboard implements OnInit {
       ],
       buttons: [
         {
-          text: 'Cancel',
-          handler: (blah) => {
-            console.log(blah);
-          }
+          text: 'Cancel'
         },
         {
           text: 'Ok',
@@ -716,9 +730,6 @@ export class dashboard implements OnInit {
     (<HTMLInputElement> document.getElementById("one-day-filter")).disabled = false;
     this.htmlChanges();
     this.chart.destroy();
-    for (let i = 0; i < labelsG.length; i++){
-      labelsG[i] = labelsG[i];
-    }
     this.createChart();
   }
 
