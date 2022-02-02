@@ -10,9 +10,13 @@ Chart.register(...registerables)
 var daysLong = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 var createdOnData: any = {};
 var signedOnData: any = {};
+var chartDisplayDataOne = [];
+var chartDisplayDataTwo = [];
+var CDLS = []
+var SDLS = []
 var enteredVolume = 0;
 var signedVolume = 0;
-var chartDisplayDataOne = [];
+
 var labelsG = [];
 // filter dictionaries
 var dayFilters = {"monday": true, "tuesday": true, "wednesday": true, "thursday": true, "friday": true, "saturday": true};
@@ -25,6 +29,7 @@ function sortStudData() {
   enteredVolume = 0;
   signedVolume = 0;
   createdOnData = {};
+  signedOnData = {};
 
   for(const inEl of data){
     // volume data
@@ -99,37 +104,51 @@ function sortStudData() {
 
     
     if (filterFlag){
+      // push created on data
+
       if (cDate in createdOnData){
         createdOnData[cDate].push(inEl);
       } else {
+        CDLS.push(cDate);
         createdOnData[cDate] = [inEl];
       }
+
+      // push signed on data
+      if (inEl["SignedOn"] != null){
+        if (cDate in signedOnData){
+          signedOnData[cDate].push(inEl);
+        } else {
+          SDLS.push(cDate);
+          signedOnData[cDate] = [inEl];
+        }
+      }
+
     }
   }
 }
 
 function clearChartXY(){
   labelsG = [];
-  chartDisplayDataOne = [];
+  chartDisplayDataOne = chartDisplayDataTwo = [];
 }
 
 
 function defaultChartDisplay(){
-  let dayHours = {};
-  chartDisplayDataOne = [];
+  let dayHours = {"created": {}, "signed": {}};
+  chartDisplayDataOne = chartDisplayDataTwo = [];
   labelsG = ["6am", "7am", "8am", "9am", "10am", "11am", "12pm", "1pm", "2pm", "3pm", "4pm", "5pm", "6pm"];
 
   
   // get latest day
-  let tmpKDates = Object.keys(createdOnData);
-  let tDay = createdOnData[tmpKDates[tmpKDates.length-1]];
+  let tcDay = createdOnData[CDLS[CDLS.length-1]];
+  let tsDay = signedOnData[SDLS[SDLS.length-1]];
   // extract data from 
-  for (const val in tDay){
-    let time = new Date(tDay[val]["CreatedOn"]).getHours();
+  for (const val in tcDay){
+    let time = new Date(tcDay[val]["CreatedOn"]).getHours();
     if (time in dayHours){
-      dayHours[time].push(tDay[val]);
+      dayHours[time].push(tcDay[val]);
     } else {
-      dayHours[time] = [tDay[val]];
+      dayHours[time] = [tcDay[val]];
     }
   }
   // change display data
@@ -554,9 +573,8 @@ export class dashboard implements OnInit {
     this.currentChartTimeRange = this.oneWeek;
     labelsG = [];
     chartDisplayDataOne = [];
-    let tmpKDates = Object.keys(createdOnData)
     for (let i = 0; i < 7; i++){
-      let date = tmpKDates[tmpKDates.length+i-8];
+      let date = CDLS[CDLS.length+i-8];
       labelsG.push(date);
       chartDisplayDataOne.push(createdOnData[date].length);
     }
@@ -576,8 +594,7 @@ export class dashboard implements OnInit {
 
   currentYear(){
     this.currentChartTimeRange = this.currentYear;
-    let tmpKDates = Object.keys(createdOnData);
-    let month = new Date(tmpKDates[tmpKDates.length-1]).getMonth();
+    let month = new Date(CDLS[CDLS.length-1]).getMonth();
     this.nMonths(month+1);
   }
 
@@ -594,8 +611,7 @@ export class dashboard implements OnInit {
   yearToDate(){
     this.currentChartTimeRange = this.yearToDate;
     this.nMonths(12);
-    let tmpKDates = Object.keys(createdOnData);
-    let latestDate = new Date(tmpKDates[tmpKDates.length-1]);
+    let latestDate = new Date(CDLS[CDLS.length-1]);
     let currDate = new Date(labelsG[0]);
     
     if (currDate.getMonth() === latestDate.getMonth()){
@@ -610,14 +626,13 @@ export class dashboard implements OnInit {
 
   nMonths(monthNum){
     clearChartXY();
-    let tmpKDates = Object.keys(createdOnData);
-    let latestDate = new Date(tmpKDates[tmpKDates.length-1]);
+    let latestDate = new Date(CDLS[CDLS.length-1]);
     let yearCorrection = 0;
     let monthCorrection = 0;
     for (let i = 0; i < monthNum; i++){
       let date = new Date(latestDate.getFullYear()-yearCorrection, latestDate.getMonth()-monthNum+monthCorrection+i+2, 0);
-      for (const val in tmpKDates){
-        let currDate = new Date(tmpKDates[val]);
+      for (const val in CDLS){
+        let currDate = new Date(CDLS[val]);
         if (currDate.getMonth() == date.getMonth()){
           labelsG.push(currDate.toDateString());
           chartDisplayDataOne.push(createdOnData[currDate.toDateString()].length);
@@ -640,7 +655,7 @@ export class dashboard implements OnInit {
   bufferCDates(){
     this.applyCustomDates(this.beginDateC, this.endDateC);
   }
-  
+
   applyCustomDates(begin, end){
     this.currentChartTimeRange = this.bufferCDates;
     clearChartXY();
@@ -666,12 +681,11 @@ export class dashboard implements OnInit {
       if (!(currDate.toDateString() in createdOnData)){
         createdOnData[currDate.toDateString()] = [];
       }
-      let tmpKDates = Object.keys(createdOnData);
-      let tmp = createdOnData[tmpKDates[tmpKDates.length-1]];
-      createdOnData[tmpKDates[tmpKDates.length-1]] = createdOnData[currDate.toDateString()];
+      let tmp = createdOnData[CDLS[CDLS.length-1]];
+      createdOnData[CDLS[CDLS.length-1]] = createdOnData[currDate.toDateString()];
       this.oneDay();
 
-      createdOnData[tmpKDates[tmpKDates.length-1]] = tmp;
+      createdOnData[CDLS[CDLS.length-1]] = tmp;
   
       
   // TODO: cycle through display chart data and fix raw data
