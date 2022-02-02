@@ -119,6 +119,7 @@ function defaultChartDisplay(){
   chartDisplayDataOne = [];
   labelsG = ["6am", "7am", "8am", "9am", "10am", "11am", "12pm", "1pm", "2pm", "3pm", "4pm", "5pm", "6pm"];
 
+  
   // get latest day
   let tmpKDates = Object.keys(createdOnData);
   let tDay = createdOnData[tmpKDates[tmpKDates.length-1]];
@@ -633,12 +634,19 @@ export class dashboard implements OnInit {
     this.replaceChart();
   }
 
+  beginDateC: Date;
+  endDateC: Date;
+
+  bufferCDates(){
+    this.applyCustomDates(this.beginDateC, this.endDateC);
+  }
   
   applyCustomDates(begin, end){
+    this.currentChartTimeRange = this.bufferCDates;
     clearChartXY();
-    let currDate = new Date(begin);
+    let currDate = this.beginDateC = new Date(begin);
     currDate.setDate(currDate.getDate()+1);
-    let endDate = new Date(end);
+    let endDate = this.endDateC = new Date(end);
     endDate.setDate(endDate.getDate()+1);
     
     if (currDate.toISOString() < endDate.toISOString()){
@@ -655,14 +663,14 @@ export class dashboard implements OnInit {
         currDate.setDate(currDate.getDate() + 1);
       }
     } else if (currDate.toISOString() == endDate.toISOString()){
-      console.log("one day");
       if (!(currDate.toDateString() in createdOnData)){
         createdOnData[currDate.toDateString()] = [];
       }
       let tmpKDates = Object.keys(createdOnData);
       let tmp = createdOnData[tmpKDates[tmpKDates.length-1]];
       createdOnData[tmpKDates[tmpKDates.length-1]] = createdOnData[currDate.toDateString()];
-      defaultChartDisplay();
+      this.oneDay();
+
       createdOnData[tmpKDates[tmpKDates.length-1]] = tmp;
   
       
