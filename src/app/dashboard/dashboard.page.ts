@@ -105,7 +105,6 @@ function sortStudData() {
     
     if (filterFlag){
       // push created on data
-
       if (cDate in createdOnData){
         createdOnData[cDate].push(inEl);
       } else {
@@ -129,37 +128,57 @@ function sortStudData() {
 
 function clearChartXY(){
   labelsG = [];
-  chartDisplayDataOne = chartDisplayDataTwo = [];
+  chartDisplayDataOne = [];
+  chartDisplayDataTwo = [];
 }
 
 
 function defaultChartDisplay(){
   let dayHours = {"created": {}, "signed": {}};
-  chartDisplayDataOne = chartDisplayDataTwo = [];
+  chartDisplayDataOne = []
+  chartDisplayDataTwo = []
   labelsG = ["6am", "7am", "8am", "9am", "10am", "11am", "12pm", "1pm", "2pm", "3pm", "4pm", "5pm", "6pm"];
 
   
   // get latest day
   let tcDay = createdOnData[CDLS[CDLS.length-1]];
   let tsDay = signedOnData[SDLS[SDLS.length-1]];
+  console.log(tcDay);
   // extract data from 
   for (const val in tcDay){
     let time = new Date(tcDay[val]["CreatedOn"]).getHours();
-    if (time in dayHours){
-      dayHours[time].push(tcDay[val]);
+    if (time in dayHours["created"]){
+      dayHours["created"][time].push(tcDay[val]);
     } else {
-      dayHours[time] = [tcDay[val]];
+      dayHours["created"][time] = [tcDay[val]];
     }
   }
+  for(const val in tsDay){
+    let time = new Date(tsDay[val]["SignedOn"]).getHours();
+    if (time in dayHours["signed"]){
+      dayHours["signed"][time].push(tsDay[val]);
+    } else {
+      dayHours["signed"][time] = [tsDay[val]];
+    }
+  }
+ 
   // change display data
   for (const val in labelsG){
     let time = (Number(val.substring(0,2))+6);
-    if (time in dayHours){
-      chartDisplayDataOne.push(dayHours[time].length)
+    
+    if (time in dayHours["created"]){
+      chartDisplayDataOne.push(dayHours["created"][time].length);
     } else {
       chartDisplayDataOne.push(0);
     }
+
+    if (time in dayHours["signed"]){
+      chartDisplayDataTwo.push(dayHours["signed"][time].length);
+    } else {
+      chartDisplayDataTwo.push(0);
+    }
   }
+
 }
 
 sortStudData();
@@ -571,12 +590,12 @@ export class dashboard implements OnInit {
 
   oneWeek() {
     this.currentChartTimeRange = this.oneWeek;
-    labelsG = [];
-    chartDisplayDataOne = [];
+    clearChartXY();
     for (let i = 0; i < 7; i++){
       let date = CDLS[CDLS.length+i-8];
       labelsG.push(date);
       chartDisplayDataOne.push(createdOnData[date].length);
+      chartDisplayDataTwo.push(signedOnData[date].length);
     }
 
     this.replaceChart();
@@ -604,6 +623,7 @@ export class dashboard implements OnInit {
     for (const val in createdOnData){
       labelsG.push(val);
       chartDisplayDataOne.push(createdOnData[val].length);
+      chartDisplayDataTwo.push(signedOnData[val].length);
     }
     this.replaceChart();
   }
@@ -636,6 +656,7 @@ export class dashboard implements OnInit {
         if (currDate.getMonth() == date.getMonth()){
           labelsG.push(currDate.toDateString());
           chartDisplayDataOne.push(createdOnData[currDate.toDateString()].length);
+          chartDisplayDataTwo.push(signedOnData[currDate.toDateString()].length)
         }
       }
 
@@ -672,23 +693,29 @@ export class dashboard implements OnInit {
         let dateString = currDate.toDateString();
         if (dateString in createdOnData){
           chartDisplayDataOne.push(createdOnData[currDate.toDateString()].length);
+          chartDisplayDataTwo.push(signedOnData[currDate.toDateString()].length)
         } else {
           chartDisplayDataOne.push(0);
+          chartDisplayDataTwo.push(0);
         }
         currDate.setDate(currDate.getDate() + 1);
       }
     } else if (currDate.toISOString() == endDate.toISOString()){
       if (!(currDate.toDateString() in createdOnData)){
         createdOnData[currDate.toDateString()] = [];
+        signedOnData[currDate.toDateString()] = [];
       }
-      let tmp = createdOnData[CDLS[CDLS.length-1]];
+      let tmpc = createdOnData[CDLS[CDLS.length-1]];
       createdOnData[CDLS[CDLS.length-1]] = createdOnData[currDate.toDateString()];
+      let tmps = signedOnData[SDLS[SDLS.length-1]];
+      signedOnData[CDLS[CDLS.length-1]] = signedOnData[currDate.toDateString()];
+
       this.oneDay();
 
-      createdOnData[CDLS[CDLS.length-1]] = tmp;
+      createdOnData[CDLS[CDLS.length-1]] = tmpc;
+      signedOnData[SDLS[SDLS.length-1]] = tmps;
   
       
-  // TODO: cycle through display chart data and fix raw data
 
     } else {
       console.log("handle error message");
@@ -767,17 +794,17 @@ export class dashboard implements OnInit {
           {
           label: 'One',
           data: chartDisplayDataOne,
-          backgroundColor: 'skyblue', // array should have same number of elements as number of dataset
-          borderColor: 'skyblue',// array should have same number of elements as number of dataset
+          backgroundColor: 'skyblue', 
+          borderColor: 'skyblue',
           borderWidth: 1
-        }
-        // {
-        //   label: 'Two',
-        //   data: [2.5, 3.8, 5, 6.9, 6.9, 7.5, 10, 17].reverse(),
-        //   backgroundColor: 'skyblue', // array should have same number of elements as number of dataset
-        //   borderColor: 'skyblue',// array should have same number of elements as number of dataset
-        //   borderWidth: 1
-        // } 
+        },
+        {
+          label: 'Two',
+          data: chartDisplayDataTwo,
+          backgroundColor: 'palegoldenrod', 
+          borderColor: 'palegoldenrod',
+          borderWidth: 1
+        } 
       ]
       },
       options: {
