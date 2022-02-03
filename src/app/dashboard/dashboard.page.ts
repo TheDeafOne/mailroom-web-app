@@ -143,7 +143,6 @@ function defaultChartDisplay(){
   // get latest day
   let tcDay = createdOnData[CDLS[CDLS.length-1]];
   let tsDay = signedOnData[SDLS[SDLS.length-1]];
-  console.log(tcDay);
   // extract data from 
   for (const val in tcDay){
     let time = new Date(tcDay[val]["CreatedOn"]).getHours();
@@ -181,6 +180,17 @@ function defaultChartDisplay(){
 
 }
 
+function volumeMetrics(){
+  enteredVolume = 0;
+  signedVolume = 0;
+  for (let i = 0; i < chartDisplayDataOne.length; i++){
+    enteredVolume += chartDisplayDataOne[i];
+  }
+  for (let i = 0; i < chartDisplayDataTwo.length; i++){
+    signedVolume += chartDisplayDataTwo[i];
+  }
+}
+
 sortStudData();
 defaultChartDisplay();
 
@@ -208,6 +218,7 @@ export class dashboard implements OnInit {
     
   }
   htmlChanges(){
+    volumeMetrics();
     document.getElementById("entered").innerText = enteredVolume.toString();
     document.getElementById("signed").innerText = signedVolume.toString();
     document.getElementById("inSystem").innerText = (enteredVolume-signedVolume).toString();
@@ -686,8 +697,7 @@ export class dashboard implements OnInit {
     endDate.setDate(endDate.getDate()+1);
     
     if (currDate.toISOString() < endDate.toISOString()){
-      console.log(currDate.toISOString());
-      console.log(endDate.toISOString());
+    
       while (currDate < endDate){
         labelsG.push(currDate.toDateString());
         let dateString = currDate.toDateString();
@@ -777,6 +787,7 @@ export class dashboard implements OnInit {
 
   replaceChart(){
     (<HTMLInputElement> document.getElementById("one-day-filter")).disabled = false;
+    volumeMetrics();
     this.htmlChanges();
     this.chart.destroy();
     this.createChart();
