@@ -191,6 +191,18 @@ function volumeMetrics(){
   }
 }
 
+let timer;
+function startFetch({chart}) {
+  console.log("testing");
+  // const {min, max} = chart.scales.x;
+  // clearTimeout(timer);
+  // timer = setTimeout(() => {
+  //   console.log('Fetched data between ' + min + ' and ' + max);
+  //   chart.stop(); // make sure animations are not running
+  //   chart.update('none');
+  // }, 500);
+}
+
 sortStudData();
 defaultChartDisplay();
 
@@ -823,11 +835,10 @@ export class dashboard implements OnInit {
       options: {
         plugins: {
           zoom: {
-            pan: {
-              enabled: true,
-              mode: 'x',
-              threshold: 5
+            limits: {
+              x: {min: 'original', max: 'original'},
             },
+            
             zoom: {
               wheel: {
                 enabled: true,
@@ -835,7 +846,8 @@ export class dashboard implements OnInit {
               drag: {
                 enabled: true
               },
-              mode: 'x'
+              mode: 'x',
+              onZoomComplete: startFetch
             }
           },
           legend: {
