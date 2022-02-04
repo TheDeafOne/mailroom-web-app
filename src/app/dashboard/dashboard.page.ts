@@ -826,9 +826,12 @@ export class dashboard implements OnInit {
             pan: {
               enabled: true,
               mode: 'x',
-              modifierKey: 'ctrl',
+              threshold: 5
             },
             zoom: {
+              wheel: {
+                enabled: true,
+              },
               drag: {
                 enabled: true
               },
