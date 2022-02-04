@@ -595,6 +595,8 @@ export class dashboard implements OnInit {
     (<HTMLInputElement> document.getElementById("one-day-filter")).disabled = true;
     clearChartXY();
     defaultChartDisplay();
+    volumeMetrics();
+    this.htmlChanges();
     this.chart.destroy();
     this.createChart();
   }
