@@ -30,6 +30,10 @@ function sortStudData() {
   signedVolume = 0;
   createdOnData = {};
   signedOnData = {};
+  chartDisplayDataOne = [];
+  chartDisplayDataTwo = [];
+  CDLS = [];
+  SDLS = [];
 
   for(const inEl of data){
     // volume data
@@ -680,8 +684,10 @@ export class dashboard implements OnInit {
         let currDate = new Date(CDLS[val]);
         if (currDate.getMonth() == date.getMonth()){
           labelsG.push(currDate.toDateString());
-          chartDisplayDataOne.push(createdOnData[currDate.toDateString()].length);
-          chartDisplayDataTwo.push(signedOnData[currDate.toDateString()].length)
+          if (currDate.toDateString() in createdOnData){
+            chartDisplayDataOne.push(createdOnData[currDate.toDateString()].length);
+            chartDisplayDataTwo.push(signedOnData[currDate.toDateString()].length)
+          }
         }
       }
 
