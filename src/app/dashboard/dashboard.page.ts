@@ -38,10 +38,9 @@ function sortStudData() {
   for(const inEl of data){
     // volume data
     enteredVolume += 1;
-    if (inEl["SignedOn"] != null){
-      signedVolume += 1;
-    }
+    
     let cDate: string = new Date(inEl["CreatedOn"]).toDateString();
+    let sDate: string = new Date(inEl["SignedOn"]).toDateString();
     let day = daysLong[new Date(inEl["CreatedOn"]).getDay()];
 
     let pckg = "box";
@@ -118,11 +117,13 @@ function sortStudData() {
 
       // push signed on data
       if (inEl["SignedOn"] != null){
-        if (cDate in signedOnData){
-          signedOnData[cDate].push(inEl);
+        signedVolume += 1;
+
+        if (sDate in signedOnData){
+          signedOnData[sDate].push(inEl);
         } else {
-          SDLS.push(cDate);
-          signedOnData[cDate] = [inEl];
+          SDLS.push(sDate);
+          signedOnData[sDate] = [inEl];
         }
       }
 
@@ -195,17 +196,7 @@ function volumeMetrics(){
   }
 }
 
-let timer;
-function startFetch({chart}) {
-  console.log("testing");
-  // const {min, max} = chart.scales.x;
-  // clearTimeout(timer);
-  // timer = setTimeout(() => {
-  //   console.log('Fetched data between ' + min + ' and ' + max);
-  //   chart.stop(); // make sure animations are not running
-  //   chart.update('none');
-  // }, 500);
-}
+
 
 sortStudData();
 defaultChartDisplay();
@@ -249,6 +240,33 @@ export class dashboard implements OnInit {
   openCustom(){
     this.menu.enable(true,'custom');
     this.menu.open('custom');
+  }
+
+  timer;
+  startFetch({chart}) {
+    console.log("testing");
+    const {min, max} = chart.scales.x;
+    enteredVolume = 0;
+    signedVolume = 0;
+    // console.log(CDLS[min]);
+    // console.log(CDLS[max]);
+    for (let i = min; i <= max; i++){
+      enteredVolume += createdOnData[CDLS[i]].length;
+      signedVolume += signedOnData[SDLS[i]].length;
+    }
+    document.getElementById("entered").innerText = enteredVolume.toString();
+    document.getElementById("signed").innerText = signedVolume.toString();
+    document.getElementById("inSystem").innerText = (enteredVolume-signedVolume).toString();
+
+
+    // clearTimeout(this.timer);
+    // this.timer = setTimeout(() => {
+    //   console.log('Fetched data between ' + min + ' and ' + max);
+    //   chart.stop(); // make sure animations are not running
+    //   chart.update('none');
+
+      
+    // }, 500);
   }
 
     async dayFilter() {
@@ -623,8 +641,16 @@ export class dashboard implements OnInit {
     for (let i = 0; i < 7; i++){
       let date = CDLS[CDLS.length+i-8];
       labelsG.push(date);
-      chartDisplayDataOne.push(createdOnData[date].length);
-      chartDisplayDataTwo.push(signedOnData[date].length);
+      if (date in createdOnData){
+        chartDisplayDataOne.push(createdOnData[date].length);
+      } else {
+        chartDisplayDataOne.push(0);
+      }
+      if (date in signedOnData){
+        chartDisplayDataTwo.push(signedOnData[date].length);
+      } else {
+        chartDisplayDataTwo.push(0);
+      }
     }
 
     this.replaceChart();
@@ -651,8 +677,16 @@ export class dashboard implements OnInit {
     clearChartXY();
     for (const val in createdOnData){
       labelsG.push(val);
-      chartDisplayDataOne.push(createdOnData[val].length);
-      chartDisplayDataTwo.push(signedOnData[val].length);
+      if (val in createdOnData){
+        chartDisplayDataOne.push(createdOnData[val].length);
+      } else {
+        chartDisplayDataOne.push(0);
+      }
+      if (val in signedOnData){
+        chartDisplayDataTwo.push(signedOnData[val].length);
+      } else {
+        chartDisplayDataTwo.push(0);
+      }
     }
     this.replaceChart();
   }
@@ -686,8 +720,15 @@ export class dashboard implements OnInit {
           labelsG.push(currDate.toDateString());
           if (currDate.toDateString() in createdOnData){
             chartDisplayDataOne.push(createdOnData[currDate.toDateString()].length);
-            chartDisplayDataTwo.push(signedOnData[currDate.toDateString()].length)
+          } else {
+            chartDisplayDataOne.push(0);
           }
+          if (currDate.toDateString() in signedOnData) {
+            chartDisplayDataTwo.push(signedOnData[currDate.toDateString()].length)
+          } else {
+            chartDisplayDataTwo.push(0);
+          }
+
         }
       }
 
@@ -723,9 +764,12 @@ export class dashboard implements OnInit {
         let dateString = currDate.toDateString();
         if (dateString in createdOnData){
           chartDisplayDataOne.push(createdOnData[currDate.toDateString()].length);
-          chartDisplayDataTwo.push(signedOnData[currDate.toDateString()].length)
         } else {
           chartDisplayDataOne.push(0);
+        }
+        if (dateString in signedOnData){
+          chartDisplayDataTwo.push(signedOnData[currDate.toDateString()].length)
+        } else {
           chartDisplayDataTwo.push(0);
         }
         currDate.setDate(currDate.getDate() + 1);
@@ -853,7 +897,7 @@ export class dashboard implements OnInit {
                 enabled: true
               },
               mode: 'x',
-              onZoomComplete: startFetch
+              onZoomComplete: this.startFetch
             }
           },
           legend: {
