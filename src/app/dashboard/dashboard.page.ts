@@ -198,6 +198,7 @@ function volumeMetrics(){
 
 
 
+
 sortStudData();
 defaultChartDisplay();
 
@@ -222,14 +223,15 @@ export class dashboard implements OnInit {
 
   ngOnInit() {
     this.htmlChanges();
-    
   }
+  
   htmlChanges(){
     volumeMetrics();
     document.getElementById("entered").innerText = enteredVolume.toString();
     document.getElementById("signed").innerText = signedVolume.toString();
     document.getElementById("inSystem").innerText = (enteredVolume-signedVolume).toString();
   }
+
   openFirst(){
     this.menu.enable(true,'first');
     this.menu.open('first');
@@ -242,32 +244,7 @@ export class dashboard implements OnInit {
     this.menu.open('custom');
   }
 
-  timer;
-  startFetch({chart}) {
-    console.log("testing");
-    const {min, max} = chart.scales.x;
-    enteredVolume = 0;
-    signedVolume = 0;
-    // console.log(CDLS[min]);
-    // console.log(CDLS[max]);
-    for (let i = min; i <= max; i++){
-      enteredVolume += createdOnData[CDLS[i]].length;
-      signedVolume += signedOnData[SDLS[i]].length;
-    }
-    document.getElementById("entered").innerText = enteredVolume.toString();
-    document.getElementById("signed").innerText = signedVolume.toString();
-    document.getElementById("inSystem").innerText = (enteredVolume-signedVolume).toString();
 
-
-    // clearTimeout(this.timer);
-    // this.timer = setTimeout(() => {
-    //   console.log('Fetched data between ' + min + ' and ' + max);
-    //   chart.stop(); // make sure animations are not running
-    //   chart.update('none');
-
-      
-    // }, 500);
-  }
 
     async dayFilter() {
 
@@ -604,7 +581,8 @@ export class dashboard implements OnInit {
   applyFilterOptions(){
     sortStudData();
     clearChartXY();
-    this.htmlChanges;
+    volumeMetrics();
+    this.htmlChanges();
     this.currentChartTimeRange();
     this.createChart();
   }
@@ -613,7 +591,6 @@ export class dashboard implements OnInit {
   changeChartType(event){
     this.chartType = event["detail"]["value"];
     this.chart.type = this.chartType;
-    this.htmlChanges();
     this.chart.destroy();
     this.createChart();  }
 
@@ -652,7 +629,8 @@ export class dashboard implements OnInit {
         chartDisplayDataTwo.push(0);
       }
     }
-
+    volumeMetrics();
+    this.htmlChanges();
     this.replaceChart();
   }
 
@@ -688,6 +666,8 @@ export class dashboard implements OnInit {
         chartDisplayDataTwo.push(0);
       }
     }
+    volumeMetrics();
+    this.htmlChanges();
     this.replaceChart();
   }
 
@@ -738,7 +718,8 @@ export class dashboard implements OnInit {
       }
     }
 
-
+    volumeMetrics();
+    this.htmlChanges();
     this.replaceChart();
   }
 
@@ -851,8 +832,7 @@ export class dashboard implements OnInit {
 
   replaceChart(){
     (<HTMLInputElement> document.getElementById("one-day-filter")).disabled = false;
-    volumeMetrics();
-    this.htmlChanges();
+
     this.chart.destroy();
     this.createChart();
   }
@@ -867,14 +847,14 @@ export class dashboard implements OnInit {
         labels: labelsG,
         datasets: [
           {
-          label: 'One',
+          label: 'Entered',
           data: chartDisplayDataOne,
           backgroundColor: 'skyblue', 
           borderColor: 'skyblue',
           borderWidth: 1
         },
         {
-          label: 'Two',
+          label: 'Signed',
           data: chartDisplayDataTwo,
           backgroundColor: 'palegoldenrod', 
           borderColor: 'palegoldenrod',
@@ -896,8 +876,8 @@ export class dashboard implements OnInit {
               drag: {
                 enabled: true
               },
-              mode: 'x',
-              onZoomComplete: this.startFetch
+              mode: 'x'
+              // onZoomComplete: this.startFetch
             }
           },
           legend: {
