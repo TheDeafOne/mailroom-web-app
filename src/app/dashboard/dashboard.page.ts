@@ -7,7 +7,7 @@ import data from 'src/assets/data/test-data.json';
 Chart.register(zoomPlugin);
 Chart.register(...registerables)
 
-var daysLong = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+const daysLong = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 var createdOnData: any = {};
 var signedOnData: any = {};
 var chartDisplayDataOne = [];
@@ -197,8 +197,6 @@ function volumeMetrics(){
 }
 
 
-
-
 sortStudData();
 defaultChartDisplay();
 
@@ -220,11 +218,23 @@ export class dashboard implements OnInit {
   constructor(private menu: MenuController, public alertController: AlertController) {}
   currentChartTimeRange: () => void = defaultChartDisplay;
 
-
   ngOnInit() {
     this.htmlChanges();
   }
   
+  ionViewDidEnter() {
+    this.createChart();
+  }
+
+  openFirst(){
+    this.menu.enable(true,'first');
+    this.menu.open('first');
+  }
+
+  openEnd(){
+    this.menu.open('end')
+  }
+
   htmlChanges(){
     volumeMetrics();
     document.getElementById("entered").innerText = enteredVolume.toString();
@@ -232,471 +242,523 @@ export class dashboard implements OnInit {
     document.getElementById("inSystem").innerText = (enteredVolume-signedVolume).toString();
   }
 
-  openFirst(){
-    this.menu.enable(true,'first');
-    this.menu.open('first');
-  }
-  openEnd(){
-    this.menu.open('end')
-  }
   openCustom(){
     this.menu.enable(true,'custom');
     this.menu.open('custom');
   }
 
+  /**
+   * Alert sheet for day filter options
+   */
+  async dayFilter() {
+    const alert = await this.alertController.create({
+      cssClass: 'my-custom-class',
+      header: 'Alert',
+      inputs: [
+        {
+          name: 'monday',
+          type: 'checkbox',
+          label: 'Monday',
+          value: 'monday',
+          handler: () => {
+            dayFilters["monday"] = !dayFilters["monday"];
+          },
+          checked: dayFilters["monday"]
+        },
 
+        {
+          name: 'tuesday',
+          type: 'checkbox',
+          label: 'Tuesday',
+          value: 'tuesday',
+          handler: () => {
+            dayFilters["tuesday"] = !dayFilters["tuesday"];
+          },
+          checked: dayFilters["tuesday"]
+        },
 
-    async dayFilter() {
+        {
+          name: 'wednesday',
+          type: 'checkbox',
+          label: 'Wednesday',
+          value: 'wednesday',
+          handler: () => {
+            dayFilters["wednesday"] = !dayFilters["wednesday"];
+          },
+          checked: dayFilters["wednesday"]
+        },
 
-        const alert = await this.alertController.create({
-          cssClass: 'my-custom-class',
-          header: 'Alert',
-          inputs: [
-            {
-              name: 'monday',
-              type: 'checkbox',
-              label: 'Monday',
-              value: 'monday',
-              handler: () => {
-                dayFilters["monday"] = !dayFilters["monday"];
-              },
-              checked: dayFilters["monday"]
-            },
-    
-            {
-              name: 'tuesday',
-              type: 'checkbox',
-              label: 'Tuesday',
-              value: 'tuesday',
-              handler: () => {
-                dayFilters["tuesday"] = !dayFilters["tuesday"];
-              },
-              checked: dayFilters["tuesday"]
-            },
-    
-            {
-              name: 'wednesday',
-              type: 'checkbox',
-              label: 'Wednesday',
-              value: 'wednesday',
-              handler: () => {
-                dayFilters["wednesday"] = !dayFilters["wednesday"];
-              },
-              checked: dayFilters["wednesday"]
-            },
-    
-            {
-              name: 'thursday',
-              type: 'checkbox',
-              label: 'Thursday',
-              value: 'thursday',
-              handler: () => {
-                dayFilters["thursday"] = !dayFilters["thursday"];
-              },
-              checked: dayFilters["thursday"]
-            },
-    
-            {
-              name: 'friday',
-              type: 'checkbox',
-              label: 'Friday',
-              value: 'thursday',
-              handler: () => {
-                dayFilters["friday"] = !dayFilters["friday"];
-              },
-              checked: dayFilters["friday"]
-            },
-    
-            {
-              name: 'saturday',
-              type: 'checkbox',
-              label: 'Saturday',
-              value: 'saturday',
-              handler: (blah) => {
-                dayFilters["saturday"] = !dayFilters["saturday"];
-              },
-              checked: dayFilters["saturday"]
+        {
+          name: 'thursday',
+          type: 'checkbox',
+          label: 'Thursday',
+          value: 'thursday',
+          handler: () => {
+            dayFilters["thursday"] = !dayFilters["thursday"];
+          },
+          checked: dayFilters["thursday"]
+        },
+
+        {
+          name: 'friday',
+          type: 'checkbox',
+          label: 'Friday',
+          value: 'thursday',
+          handler: () => {
+            dayFilters["friday"] = !dayFilters["friday"];
+          },
+          checked: dayFilters["friday"]
+        },
+
+        {
+          name: 'saturday',
+          type: 'checkbox',
+          label: 'Saturday',
+          value: 'saturday',
+          handler: (blah) => {
+            dayFilters["saturday"] = !dayFilters["saturday"];
+          },
+          checked: dayFilters["saturday"]
+        }
+      ],
+      buttons: [
+        {
+          text: 'Select All',
+          cssClass: 'filter-button',
+          handler: (blah) => {
+            for (let i in dayFilters){
+              dayFilters[i] = true;
             }
-          ],
-          buttons: [
-            {
-              text: 'Select All',
-              cssClass: 'filter-button',
-              handler: (blah) => {
-                for (let i in dayFilters){
-                  dayFilters[i] = true;
-                }
-                this.applyFilterOptions();
-              }
-            },
-            {
-              text: 'Ok',
-              cssClass: 'filter-button',
-              handler: (blah) => {
-                this.applyFilterOptions();
-              }
-            }, 
-            
-          ]
-        });
-        await alert.present();
-      }
-    
-    async packageFilter() {
-    
-        const alert = await this.alertController.create({
-          cssClass: 'my-custom-class',
-          header: 'Alert',
-          inputs: [
-            {
-              name: 'box',
-              type: 'checkbox',
-              label: 'Box',
-              value: 'box',
-              handler: () => {
-                packageFilters["box"] = !packageFilters["box"];
-              },
-              checked: packageFilters["box"]
-            },
-    
-            {
-              name: 'flat',
-              type: 'checkbox',
-              label: 'Flat',
-              value: 'flat',
-              handler: () => {
-                packageFilters["flat"] = !packageFilters["flat"];
-              },
-              checked: packageFilters["flat"]
-            },
-    
-            {
-              name: 'shelf',
-              type: 'checkbox',
-              label: 'Shelf',
-              value: 'shelf',
-              handler: () => {
-                packageFilters["shelf"] = !packageFilters["shelf"];
-              },
-              checked: packageFilters["shelf"]
-            },
-    
-            {
-              name: 'tube',
-              type: 'checkbox',
-              label: 'Tube',
-              value: 'tube',
-              handler: () => {
-                packageFilters["tube"] = !packageFilters["tube"];
-              },
-              checked: packageFilters["tube"]
+            this.applyFilterOptions();
+          }
+        },
+        {
+          text: 'Ok',
+          cssClass: 'filter-button',
+          handler: (blah) => {
+            this.applyFilterOptions();
+          }
+        }, 
+        
+      ]
+    });
+    await alert.present();
+  }
+
+  /**
+   * Alert sheet for package filter options
+   */
+  async packageFilter() {
+    const alert = await this.alertController.create({
+      cssClass: 'my-custom-class',
+      header: 'Alert',
+      inputs: [
+        {
+          name: 'box',
+          type: 'checkbox',
+          label: 'Box',
+          value: 'box',
+          handler: () => {
+            packageFilters["box"] = !packageFilters["box"];
+          },
+          checked: packageFilters["box"]
+        },
+
+        {
+          name: 'flat',
+          type: 'checkbox',
+          label: 'Flat',
+          value: 'flat',
+          handler: () => {
+            packageFilters["flat"] = !packageFilters["flat"];
+          },
+          checked: packageFilters["flat"]
+        },
+
+        {
+          name: 'shelf',
+          type: 'checkbox',
+          label: 'Shelf',
+          value: 'shelf',
+          handler: () => {
+            packageFilters["shelf"] = !packageFilters["shelf"];
+          },
+          checked: packageFilters["shelf"]
+        },
+
+        {
+          name: 'tube',
+          type: 'checkbox',
+          label: 'Tube',
+          value: 'tube',
+          handler: () => {
+            packageFilters["tube"] = !packageFilters["tube"];
+          },
+          checked: packageFilters["tube"]
+        }
+      ],
+      buttons: [
+        {
+          text: 'Select All',
+          cssClass: 'filter-button',
+          handler: (blah) => {
+            for (let i in packageFilters){
+              packageFilters[i] = true;
             }
-          ],
-          buttons: [
-            {
-              text: 'Select All',
-              cssClass: 'filter-button',
-              handler: (blah) => {
-                for (let i in packageFilters){
-                  packageFilters[i] = true;
-                }
-                this.applyFilterOptions();
-              }
-            },
-            {
-              text: 'Ok',
-              cssClass: 'filter-button',
-              handler: (blah) => {
-                this.applyFilterOptions();
-              }
-            }, 
-            
-          ]
-        });
-    
-        await alert.present();
-      }
+            this.applyFilterOptions();
+          }
+        },
+        {
+          text: 'Ok',
+          cssClass: 'filter-button',
+          handler: (blah) => {
+            this.applyFilterOptions();
+          }
+        }, 
+        
+      ]
+    });
 
-   
-      async courierFilter() {
-    
-        const alert = await this.alertController.create({
-          cssClass: 'my-custom-class',
-          header: 'Alert',
-          inputs: [
-            {
-              name: 'amazon',
-              type: 'checkbox',
-              label: 'Amazon',
-              value: 'amazon',
-              handler: () => {
-                courierFilters["amazon"] = !courierFilters["amazon"];
-              },
-              checked: courierFilters["amazon"]
-            },
-    
-            {
-              name: 'ups',
-              type: 'checkbox',
-              label: 'UPS',
-              value: 'ups',
-              handler: () => {
-                courierFilters["ups"] = !courierFilters["ups"];
-              },
-              checked: courierFilters["ups"]
-            },
-    
-            {
-              name: 'usps',
-              type: 'checkbox',
-              label: 'USPS',
-              value: 'usps',
-              handler: () => {
-                courierFilters["usps"] = !courierFilters["usps"];
-              },
-              checked: courierFilters["usps"]
-            },
-            {
-              name: 'fedex',
-              type: 'checkbox',
-              label: 'FedEx',
-              value: 'fedex',
-              handler: () => {
-                courierFilters["fedex"] = !courierFilters["fedex"];
-              },
-              checked: courierFilters["fedex"]
-            },
-
-            {
-              name: 'lasership',
-              type: 'checkbox',
-              label: 'LaserShip',
-              value: 'lasership',
-              handler: () => {
-                courierFilters["lasership"] = !courierFilters["lasership"];
-              },
-              checked: courierFilters["lasership"]
-            },
-            {
-              name: 'other',
-              type: 'checkbox',
-              label: 'Other',
-              value: 'other',
-              handler: () => {
-                courierFilters["other"] = !courierFilters["other"];
-              },
-              checked: courierFilters["other"]
-            }
-          ],
-          buttons: [
-            {
-              text: 'Select All',
-              cssClass: 'filter-button',
-              handler: (blah) => {
-                for (let i in courierFilters){
-                  courierFilters[i] = true;
-                }
-                this.applyFilterOptions();
-              }
-            },
-            {
-              text: 'Ok',
-              cssClass: 'filter-button',
-              handler: (blah) => {
-                this.applyFilterOptions();
-              }
-            }, 
-            
-          ]
-        });
-    
-        await alert.present();
-      }
-
-      async recipientFilter() {
-    
-        const alert = await this.alertController.create({
-          cssClass: 'my-custom-class',
-          header: 'Alert',
-          inputs: [
-            {
-              name: 'student',
-              type: 'checkbox',
-              label: 'Student',
-              value: 'student',
-              handler: () => {
-                recipientFilters["student"] = !recipientFilters["student"];
-              },
-              checked: recipientFilters["student"]
-            },
-    
-            {
-              name: 'faculty',
-              type: 'checkbox',
-              label: 'Faculty and Staff',
-              value: 'faculty',
-              handler: () => {
-                recipientFilters["faculty"] = !recipientFilters["faculty"];
-              },
-              checked: recipientFilters["faculty"]
-            },
-    
-            {
-              name: 'box-range',
-              type: 'checkbox',
-              label: 'Box Range',
-              value: 'box-range',
-              handler: () => {
-                recipientFilters["box-range"] = !recipientFilters["box-range"];
-              },
-              checked: recipientFilters["box-range"]
-            }
-          ],
-          buttons: [
-            {
-              text: 'Select All',
-              cssClass: 'filter-button',
-              handler: (blah) => {
-                for (let i in recipientFilters){
-                  recipientFilters[i] = true;
-                }
-                this.applyFilterOptions();
-              }
-            },
-            {
-              text: 'Ok',
-              cssClass: 'filter-button',
-              handler: (blah) => {
-                this.applyFilterOptions();
-              }
-            }, 
-            
-          ]
-        });
-    
-        await alert.present();
-      }
-  
-
-  applyFilterOptions(){
-    sortStudData();
-    clearChartXY();
-    volumeMetrics();
-    this.htmlChanges();
-    this.currentChartTimeRange();
-    this.createChart();
+    await alert.present();
   }
 
 
+  /**
+   * Alert sheet for courier filter options
+   */
+  async courierFilter() {
+    const alert = await this.alertController.create({
+      cssClass: 'my-custom-class',
+      header: 'Alert',
+      inputs: [
+        {
+          name: 'amazon',
+          type: 'checkbox',
+          label: 'Amazon',
+          value: 'amazon',
+          handler: () => {
+            courierFilters["amazon"] = !courierFilters["amazon"];
+          },
+          checked: courierFilters["amazon"]
+        },
+
+        {
+          name: 'ups',
+          type: 'checkbox',
+          label: 'UPS',
+          value: 'ups',
+          handler: () => {
+            courierFilters["ups"] = !courierFilters["ups"];
+          },
+          checked: courierFilters["ups"]
+        },
+
+        {
+          name: 'usps',
+          type: 'checkbox',
+          label: 'USPS',
+          value: 'usps',
+          handler: () => {
+            courierFilters["usps"] = !courierFilters["usps"];
+          },
+          checked: courierFilters["usps"]
+        },
+        {
+          name: 'fedex',
+          type: 'checkbox',
+          label: 'FedEx',
+          value: 'fedex',
+          handler: () => {
+            courierFilters["fedex"] = !courierFilters["fedex"];
+          },
+          checked: courierFilters["fedex"]
+        },
+
+        {
+          name: 'lasership',
+          type: 'checkbox',
+          label: 'LaserShip',
+          value: 'lasership',
+          handler: () => {
+            courierFilters["lasership"] = !courierFilters["lasership"];
+          },
+          checked: courierFilters["lasership"]
+        },
+        {
+          name: 'other',
+          type: 'checkbox',
+          label: 'Other',
+          value: 'other',
+          handler: () => {
+            courierFilters["other"] = !courierFilters["other"];
+          },
+          checked: courierFilters["other"]
+        }
+      ],
+      buttons: [
+        {
+          text: 'Select All',
+          cssClass: 'filter-button',
+          handler: (blah) => {
+            for (let i in courierFilters){
+              courierFilters[i] = true;
+            }
+            this.applyFilterOptions();
+          }
+        },
+        {
+          text: 'Ok',
+          cssClass: 'filter-button',
+          handler: (blah) => {
+            this.applyFilterOptions();
+          }
+        }, 
+        
+      ]
+    });
+
+    await alert.present();
+  }
+
+  /**
+   * Alert sheet for recipient filter options
+   */
+  async recipientFilter() {
+    const alert = await this.alertController.create({
+      cssClass: 'my-custom-class',
+      header: 'Alert',
+      inputs: [
+        {
+          name: 'student',
+          type: 'checkbox',
+          label: 'Student',
+          value: 'student',
+          handler: () => {
+            recipientFilters["student"] = !recipientFilters["student"];
+          },
+          checked: recipientFilters["student"]
+        },
+
+        {
+          name: 'faculty',
+          type: 'checkbox',
+          label: 'Faculty and Staff',
+          value: 'faculty',
+          handler: () => {
+            recipientFilters["faculty"] = !recipientFilters["faculty"];
+          },
+          checked: recipientFilters["faculty"]
+        },
+
+        {
+          name: 'box-range',
+          type: 'checkbox',
+          label: 'Box Range',
+          value: 'box-range',
+          handler: () => {
+            recipientFilters["box-range"] = !recipientFilters["box-range"];
+          },
+          checked: recipientFilters["box-range"]
+        }
+      ],
+      buttons: [
+        {
+          text: 'Select All',
+          cssClass: 'filter-button',
+          handler: (blah) => {
+            for (let i in recipientFilters){
+              recipientFilters[i] = true;
+            }
+            this.applyFilterOptions();
+          }
+        },
+        {
+          text: 'Ok',
+          cssClass: 'filter-button',
+          handler: (blah) => {
+            this.applyFilterOptions();
+          }
+        }, 
+      ]
+    });
+    await alert.present();
+  }
+  
+
+  /**
+   * Function that applies currently selected filter options
+   */
+  applyFilterOptions(){
+    sortStudData(); // sorts data according to set filters
+    clearChartXY(); // clears current chart
+    this.currentChartTimeRange(); // calls current time range so chart isn't reset to daily
+    this.createChart();
+  }
+
+  /**
+   * Function that changes chart type.
+   * //TODO add scatter chart option
+   * @param event given html event holding requested chart type
+   */
   changeChartType(event){
     this.chartType = event["detail"]["value"];
     this.chart.type = this.chartType;
-    this.chart.destroy();
-    this.createChart();  }
-
-  ionViewDidEnter() {
-    this.createChart();
+    this.createChart();  
   }
 
   
-
-  // Visualizing data for one day
+  /**
+   * Function that displays current day's data
+   */
   oneDay(){
     this.currentChartTimeRange = this.oneDay;
-    (<HTMLInputElement> document.getElementById("one-day-filter")).disabled = true;
     clearChartXY();
     defaultChartDisplay();
-    volumeMetrics();
-    this.htmlChanges();
-    this.chart.destroy();
     this.createChart();
   }
 
+
+  /**
+   * Function that displays latest week of data
+   */
   oneWeek() {
     this.currentChartTimeRange = this.oneWeek;
     clearChartXY();
+    // check for past seven daily inputs
+    //TODO: check with kathy to see if she wants solely this week, or literally just the past seven days
     for (let i = 0; i < 7; i++){
+
+      // get the ith date within the 7 day range and add to x labels
       let date = CDLS[CDLS.length+i-8];
       labelsG.push(date);
-      if (date in createdOnData){
-        chartDisplayDataOne.push(createdOnData[date].length);
-      } else {
-        chartDisplayDataOne.push(0);
-      }
+
+      // pulling date from CDLS, so the date will always be in createdOnData
+      chartDisplayDataOne.push(createdOnData[date].length);
+    
+      // check if date is in signedOnData as well and add to display 
       if (date in signedOnData){
         chartDisplayDataTwo.push(signedOnData[date].length);
       } else {
         chartDisplayDataTwo.push(0);
       }
     }
-    volumeMetrics();
-    this.htmlChanges();
-    this.replaceChart();
+    this.createChart();
   }
 
+
+  /**
+   * Function that displays the current month'ss data
+   */
   oneMonth(){
     this.currentChartTimeRange = this.oneMonth;
     this.nMonths(1);
   }
 
+
+  /**
+   * Function that displays the past three months of data
+   */
   threeMonths(){
     this.currentChartTimeRange = this.threeMonths;
     this.nMonths(3);
   }
 
+
+  /**
+   * Function that displays all data within the current year
+   */
   currentYear(){
     this.currentChartTimeRange = this.currentYear;
+    // get current month
+    // TODO: double check this output (month not possible correct??)
     let month = new Date(CDLS[CDLS.length-1]).getMonth();
     this.nMonths(month+1);
   }
 
+
+  /**
+   * Function that displays all data
+   */
   maxData(){
     this.currentChartTimeRange = this.maxData;
     clearChartXY();
+
+    // TODO: possible error (recreate - separate signed on data into its own for loop. note that max data produces odd outliers in signed on data)
+    // cycle through days where packages were entered, include created and signed on data for those days
+    // days solely 
     for (const val in createdOnData){
+      // set up x labels
       labelsG.push(val);
-      if (val in createdOnData){
-        chartDisplayDataOne.push(createdOnData[val].length);
-      } else {
-        chartDisplayDataOne.push(0);
-      }
+
+      // push created on data
+      chartDisplayDataOne.push(createdOnData[val].length);
+      
+      // check to see if any packages have been signed in that day and push to display data accordingly
       if (val in signedOnData){
         chartDisplayDataTwo.push(signedOnData[val].length);
       } else {
         chartDisplayDataTwo.push(0);
       }
     }
-    volumeMetrics();
-    this.htmlChanges();
-    this.replaceChart();
+    this.createChart();
   }
 
+
+  /**
+   * Function that gets the past 12 months of data
+   */
   yearToDate(){
     this.currentChartTimeRange = this.yearToDate;
+    // get 12 month display data
     this.nMonths(12);
-    let latestDate = new Date(CDLS[CDLS.length-1]);
-    let currDate = new Date(labelsG[0]);
+
+    // TODO: test if this section of code is actually of any use 
+
+    // get most recent date and earliest date within the 12 span
+    // let latestDate = new Date(CDLS[CDLS.length-1]);
+    // let earliestDate = new Date(labelsG[0]);
     
-    if (currDate.getMonth() === latestDate.getMonth()){
-      while (currDate.getDate() < latestDate.getDate()){
-        labelsG.splice(0,1);
-        chartDisplayDataOne.splice(0,1);
-        currDate = new Date(labelsG[0]);
-      }
-      this.replaceChart();
-    }
+    // // this should generally be true, but if there's been a month gap with no entered or signed packages, it's possible to be false
+    // if (earliestDate.getMonth() === latestDate.getMonth()){
+    //   while (earliestDate.getDate() < latestDate.getDate()){
+    //     labelsG.splice(0,1);
+    //     chartDisplayDataOne.splice(0,1);
+    //     earliestDate = new Date(labelsG[0]);
+    //   }
+    // }
+    this.createChart();
   }
 
+
+  //TODO: check if created/signed on data has less than 7 days and act accordingly
+  //TODO: see if optimization is possible with the c/s data and querying
+  /**
+   * A function that displays the given number of months
+   * @param monthNum number of months to display
+   */
   nMonths(monthNum){
+    // clear any currently displayed data
     clearChartXY();
+    // get the most recent date
     let latestDate = new Date(CDLS[CDLS.length-1]);
     let yearCorrection = 0;
     let monthCorrection = 0;
+
+    // cycle through and get the data for each required month
     for (let i = 0; i < monthNum; i++){
-      let date = new Date(latestDate.getFullYear()-yearCorrection, latestDate.getMonth()-monthNum+monthCorrection+i+2, 0);
+      
+      // get current month/year in loop
+      let currMonth = new Date(latestDate.getFullYear()-yearCorrection, latestDate.getMonth()-monthNum+monthCorrection+i+2, 0);
+
+      // cycle through all the created on data
       for (const val in CDLS){
+        // get current date
         let currDate = new Date(CDLS[val]);
-        if (currDate.getMonth() == date.getMonth()){
+
+        // check if current date is in current month
+        if (currDate.getMonth() == currMonth.getMonth()){
+          
+          // push created and signed date to chart display
           labelsG.push(currDate.toDateString());
           if (currDate.toDateString() in createdOnData){
             chartDisplayDataOne.push(createdOnData[currDate.toDateString()].length);
@@ -712,94 +774,118 @@ export class dashboard implements OnInit {
         }
       }
 
+      // date correction for time ranges going into past years
       if(latestDate.getMonth()-i == 1){
         yearCorrection = 1;
         monthCorrection = 12;
       }
     }
-
-    volumeMetrics();
-    this.htmlChanges();
-    this.replaceChart();
+    this.createChart();
   }
 
+
+  /**
+   * currentChartTimeRange does not accept parameters, so a buffer of sorts needs to be in place
+   */
   beginDateC: Date;
   endDateC: Date;
-
   bufferCDates(){
+    console.log(this.beginCDate);
+    console.log(this.endCDate);
     this.applyCustomDates(this.beginDateC, this.endDateC);
   }
 
+
+  //TODO: fix custom dates glitch (recreate - set wide date range, click okay, go back and set the start month forward)
+  /**
+   * Display data from start date to end date. For example:
+   * begin: 1-1-2021, end: 1-2-2021
+   * would show all the signed on/created on data for the two days January 1st 2021 through January 2nd 2021, including no-enter days
+   * no-enter days are sundays, holidays, etc. where no packages will be entered or signed.
+   * @param begin date to start displaying data on
+   * @param end date to stop displaying data on
+   */
   applyCustomDates(begin, end){
+    // maintain custom dates through filter changes
     this.currentChartTimeRange = this.bufferCDates;
     clearChartXY();
+
     let currDate = this.beginDateC = new Date(begin);
-    currDate.setDate(currDate.getDate()+1);
     let endDate = this.endDateC = new Date(end);
+
+    // handle date glitch, not sure why this happens
+    currDate.setDate(currDate.getDate()+1);
     endDate.setDate(endDate.getDate()+1);
+
+    let currDateStr = currDate.toDateString();
+
     
     if (currDate.toISOString() < endDate.toISOString()){
     
       while (currDate < endDate){
-        labelsG.push(currDate.toDateString());
-        let dateString = currDate.toDateString();
+        labelsG.push(currDateStr);
+        let dateString = currDateStr;
         if (dateString in createdOnData){
-          chartDisplayDataOne.push(createdOnData[currDate.toDateString()].length);
+          chartDisplayDataOne.push(createdOnData[currDateStr].length);
         } else {
           chartDisplayDataOne.push(0);
         }
         if (dateString in signedOnData){
-          chartDisplayDataTwo.push(signedOnData[currDate.toDateString()].length)
+          chartDisplayDataTwo.push(signedOnData[currDateStr].length)
         } else {
           chartDisplayDataTwo.push(0);
         }
         currDate.setDate(currDate.getDate() + 1);
       }
     } else if (currDate.toISOString() == endDate.toISOString()){
-      if (!(currDate.toDateString() in createdOnData)){
-        createdOnData[currDate.toDateString()] = [];
-        signedOnData[currDate.toDateString()] = [];
+      if (!(currDateStr in createdOnData)){
+        createdOnData[currDateStr] = [];
+        signedOnData[currDateStr] = [];
       }
       let tmpc = createdOnData[CDLS[CDLS.length-1]];
-      createdOnData[CDLS[CDLS.length-1]] = createdOnData[currDate.toDateString()];
       let tmps = signedOnData[SDLS[SDLS.length-1]];
-      signedOnData[CDLS[CDLS.length-1]] = signedOnData[currDate.toDateString()];
+      createdOnData[CDLS[CDLS.length-1]] = createdOnData[currDateStr];
+      signedOnData[CDLS[CDLS.length-1]] = signedOnData[currDateStr];
 
       this.oneDay();
 
       createdOnData[CDLS[CDLS.length-1]] = tmpc;
       signedOnData[SDLS[SDLS.length-1]] = tmps;
-  
-      
-
     } else {
       console.log("handle error message");
     }
     
-    this.replaceChart();
+    // visualize chart
+    this.createChart();
   }
 
-  beginCDate = new Date().toISOString().split('T')[0];
-  endCDate = this.beginCDate;
+  
 
+  /**
+   * Custom date range option
+   * make prettier and figure out why signature data is on for sundays somehow??
+   */
 
+  // begin and end date variables to maintain custom value changes
+  beginCDate;
+  endCDate;
   async customDates(){
+    // today to maintain max date value
+    let today = new Date().toISOString().split('T')[0];
 
-    let today = this.beginCDate;
+    // alert sheet
     const alert = await this.alertController.create({
       cssClass: 'my-custom-class',
       header: 'Custom Range',
+
       inputs: [
         {
           name: 'begin',
           type: 'date',
           min: '2020-01-01',
-          max: this.endCDate,
+          max: today,
           label: 'Begin',
-          value: this.beginCDate,
-          handler: (blah) => {
-            this.beginCDate = blah.value;
-          }
+          value: this.beginCDate
         },
         {
           name: 'end',
@@ -807,10 +893,7 @@ export class dashboard implements OnInit {
           min: '2020-01-01',
           max: today,
           label: 'End',
-          value: this.endCDate,
-          handler: (blah) => {
-            this.endCDate = blah.value;
-          }
+          value: this.endCDate
         }
       ],
       buttons: [
@@ -819,8 +902,11 @@ export class dashboard implements OnInit {
         },
         {
           text: 'Ok',
-          handler: (blah) => {
-            this.applyCustomDates(blah["begin"], blah["end"]);
+          // set current begin and end date values and call to display data
+          handler: (inputs) => {
+            this.beginCDate = inputs["begin"];
+            this.endCDate = inputs["end"];
+            this.applyCustomDates(inputs["begin"], inputs["end"]);
           }
         }, 
       ]
@@ -830,21 +916,41 @@ export class dashboard implements OnInit {
   
   }
 
-  replaceChart(){
-    (<HTMLInputElement> document.getElementById("one-day-filter")).disabled = false;
+  // /**
+  //  * 
+  //  */
+  // replaceChart(){
+  //   // (<HTMLInputElement> document.getElementById("one-day-filter")).disabled = false;
+  //   this.createChart();
+  // }
 
-    this.chart.destroy();
-    this.createChart();
-  }
-
+  /**
+   * Generate chart for two data sets: signed on and created on data
+   */
   createChart() {
-    if(this.chart!=null){
+    // check for previously made chart
+    if(this.chart != null){
+      // handle one day filter disabling
+      // required to keep user from using mon-sat filters on a one day chart
+      let odFilter = (<HTMLInputElement> document.getElementById("one-day-filter"));
+      if(this.currentChartTimeRange == this.oneDay){
+        odFilter.disabled = true;
+      } else {
+        odFilter.disabled = false;
+      }
+      this.htmlChanges();
       this.chart.destroy();
     }
+
     this.chart = new Chart(this.barChart.nativeElement, {
+      // variable chart types: bar, line, and scatter
+      // TODO: get scatter chart working
       type: this.chartType,
-      data: {
+
+        data: {
         labels: labelsG,
+
+        // TODO: allow data color changing
         datasets: [
           {
           label: 'Entered',
@@ -864,11 +970,12 @@ export class dashboard implements OnInit {
       },
       options: {
         plugins: {
+          // zoom plugin for wheel and drag
+          // TODO: possibly get pan working
           zoom: {
             limits: {
               x: {min: 'original', max: 'original'},
             },
-            
             zoom: {
               wheel: {
                 enabled: true,
@@ -880,10 +987,11 @@ export class dashboard implements OnInit {
               // onZoomComplete: this.startFetch
             }
           },
+
+          // TODO: custom legend
           legend: {
             display: false,
           }
-        
         },
         responsive: true,
         maintainAspectRatio: false,
