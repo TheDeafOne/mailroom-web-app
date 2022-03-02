@@ -603,7 +603,6 @@ export class dashboard implements OnInit {
 
   /**
    * Function that changes chart type.
-   * //TODO add scatter chart option
    * @param event given html event holding requested chart type
    */
   changeChartType(event){
@@ -631,7 +630,6 @@ export class dashboard implements OnInit {
     this.currentChartTimeRange = this.oneWeek;
     clearChartXY();
     // check for past seven daily inputs
-    //TODO: check with kathy to see if she wants solely this week, or literally just the past seven days
     for (let i = 0; i < 7; i++){
 
       // get the ith date within the 7 day range and add to x labels
@@ -676,7 +674,6 @@ export class dashboard implements OnInit {
   currentYear(){
     this.currentChartTimeRange = this.currentYear;
     // get current month
-    // TODO: double check this output (month not possible correct??)
     let month = new Date(CDLS[CDLS.length-1]).getMonth();
     this.nMonths(month+1);
   }
@@ -689,9 +686,7 @@ export class dashboard implements OnInit {
     this.currentChartTimeRange = this.maxData;
     clearChartXY();
 
-    // TODO: possible error (recreate - separate signed on data into its own for loop. note that max data produces odd outliers in signed on data)
     // cycle through days where packages were entered, include created and signed on data for those days
-    // days solely 
     for (const val in createdOnData){
       // set up x labels
       labelsG.push(val);
@@ -715,29 +710,11 @@ export class dashboard implements OnInit {
    */
   yearToDate(){
     this.currentChartTimeRange = this.yearToDate;
-    // get 12 month display data
     this.nMonths(12);
-
-    // TODO: test if this section of code is actually of any use 
-
-    // get most recent date and earliest date within the 12 span
-    // let latestDate = new Date(CDLS[CDLS.length-1]);
-    // let earliestDate = new Date(labelsG[0]);
-    
-    // // this should generally be true, but if there's been a month gap with no entered or signed packages, it's possible to be false
-    // if (earliestDate.getMonth() === latestDate.getMonth()){
-    //   while (earliestDate.getDate() < latestDate.getDate()){
-    //     labelsG.splice(0,1);
-    //     chartDisplayDataOne.splice(0,1);
-    //     earliestDate = new Date(labelsG[0]);
-    //   }
-    // }
     this.createChart();
   }
 
 
-  //TODO: check if created/signed on data has less than 7 days and act accordingly
-  //TODO: see if optimization is possible with the c/s data and querying
   /**
    * A function that displays the given number of months
    * @param monthNum number of months to display
@@ -776,12 +753,11 @@ export class dashboard implements OnInit {
           } else {
             chartDisplayDataTwo.push(0);
           }
-
         }
       }
 
       // date correction for time ranges going into past years
-      if(latestDate.getMonth()-i == 1){
+      if (latestDate.getMonth()-i == 1){
         yearCorrection = 1;
         monthCorrection = 12;
       }
