@@ -7,6 +7,12 @@ import data from 'src/assets/data/test-data.json';
 Chart.register(zoomPlugin);
 Chart.register(...registerables)
 
+
+//TODO: time range comments
+//TODO: CSS updates
+//TODO: trends
+//TODO: class splitting and optimization
+
 const daysLong = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 var createdOnData: any = {};
 var signedOnData: any = {};
@@ -785,19 +791,6 @@ export class dashboard implements OnInit {
 
 
   /**
-   * currentChartTimeRange does not accept parameters, so a buffer of sorts needs to be in place
-   */
-  beginDateC: Date;
-  endDateC: Date;
-  bufferCDates(){
-    console.log(this.beginCDate);
-    console.log(this.endCDate);
-    this.applyCustomDates(this.beginDateC, this.endDateC);
-  }
-
-
-  //TODO: fix custom dates glitch (recreate - set wide date range, click okay, go back and set the start month forward)
-  /**
    * Display data from start date to end date. For example:
    * begin: 1-1-2021, end: 1-2-2021
    * would show all the signed on/created on data for the two days January 1st 2021 through January 2nd 2021, including no-enter days
@@ -805,52 +798,58 @@ export class dashboard implements OnInit {
    * @param begin date to start displaying data on
    * @param end date to stop displaying data on
    */
-  applyCustomDates(begin, end){
-    // maintain custom dates through filter changes
-    this.currentChartTimeRange = this.bufferCDates;
+  // begin and end date variables to maintain custom value changes
+  beginCDate: string;
+  endCDate: string;
+  applyCustomDates(){
+    this.currentChartTimeRange = this.applyCustomDates;
     clearChartXY();
 
-    let currDate = this.beginDateC = new Date(begin);
-    let endDate = this.endDateC = new Date(end);
+    let currDate = new Date(this.beginCDate);
+    let endDate = new Date(this.endCDate);
 
-    // handle date glitch, not sure why this happens
-    currDate.setDate(currDate.getDate()+1);
-    endDate.setDate(endDate.getDate()+1);
 
-    let currDateStr = currDate.toDateString();
-
-    
+    // check that currDate is before endDate
     if (currDate.toISOString() < endDate.toISOString()){
-    
-      while (currDate < endDate){
+
+      // update display data for every day between currDate and endDate
+      while (currDate.toISOString() <= endDate.toISOString()){
+
+        // update currDateStr
+        let currDateStr = currDate.toDateString();
+
+        // add to labels
         labelsG.push(currDateStr);
-        let dateString = currDateStr;
-        if (dateString in createdOnData){
+
+        // push created/signed date to lists
+        if (currDateStr in createdOnData){
           chartDisplayDataOne.push(createdOnData[currDateStr].length);
         } else {
           chartDisplayDataOne.push(0);
         }
-        if (dateString in signedOnData){
+        if (currDateStr in signedOnData){
           chartDisplayDataTwo.push(signedOnData[currDateStr].length)
         } else {
           chartDisplayDataTwo.push(0);
         }
+        // update currDate
         currDate.setDate(currDate.getDate() + 1);
       }
-    } else if (currDate.toISOString() == endDate.toISOString()){
-      if (!(currDateStr in createdOnData)){
-        createdOnData[currDateStr] = [];
-        signedOnData[currDateStr] = [];
-      }
-      let tmpc = createdOnData[CDLS[CDLS.length-1]];
-      let tmps = signedOnData[SDLS[SDLS.length-1]];
-      createdOnData[CDLS[CDLS.length-1]] = createdOnData[currDateStr];
-      signedOnData[CDLS[CDLS.length-1]] = signedOnData[currDateStr];
+    // } else if (currDate.toISOString() == endDate.toISOString()){
+    //   if (!(currDateStr in createdOnData)){
+    //     createdOnData[currDateStr] = [];
+    //     signedOnData[currDateStr] = [];
+    //   }
+    //   let tmpc = createdOnData[CDLS[CDLS.length-1]];
+    //   let tmps = signedOnData[SDLS[SDLS.length-1]];
+    //   createdOnData[CDLS[CDLS.length-1]] = createdOnData[currDateStr];
+    //   signedOnData[CDLS[CDLS.length-1]] = signedOnData[currDateStr];
 
-      this.oneDay();
+    //   this.oneDay();
 
-      createdOnData[CDLS[CDLS.length-1]] = tmpc;
-      signedOnData[SDLS[SDLS.length-1]] = tmps;
+    //   createdOnData[CDLS[CDLS.length-1]] = tmpc;
+    //   signedOnData[SDLS[SDLS.length-1]] = tmps;
+
     } else {
       console.log("handle error message");
     }
@@ -866,9 +865,6 @@ export class dashboard implements OnInit {
    * make prettier and figure out why signature data is on for sundays somehow??
    */
 
-  // begin and end date variables to maintain custom value changes
-  beginCDate;
-  endCDate;
   async customDates(){
     // today to maintain max date value
     let today = new Date().toISOString().split('T')[0];
@@ -905,8 +901,8 @@ export class dashboard implements OnInit {
           // set current begin and end date values and call to display data
           handler: (inputs) => {
             this.beginCDate = inputs["begin"];
-            this.endCDate = inputs["end"];
-            this.applyCustomDates(inputs["begin"], inputs["end"]);
+            this.endCDate = inputs["end"];    
+            this.applyCustomDates();
           }
         }, 
       ]
@@ -988,7 +984,6 @@ export class dashboard implements OnInit {
             }
           },
 
-          // TODO: custom legend
           legend: {
             display: false,
           }

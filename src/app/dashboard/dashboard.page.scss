@@ -14,9 +14,6 @@ ion-card {
     padding: 0 !important;
 }
 
-// ion-button{
-    
-// }
 
 ion-card-header{
     color: slategrey;
@@ -26,7 +23,7 @@ ion-card-header{
 canvas {
     border: 3px gray;
     width: 68%;
-    // height:100%;
+    height:100%;
 }
 
 .chart {
@@ -40,14 +37,15 @@ canvas {
 }
 
 .filtered-card{
-    height:100%;
+    height:150%;
+    
 }
 
 // filters
 .chart-filters-wrapper{
     display:flex;
     justify-content: left;
-    width:100%;
+    width: 100%;
     overflow: hidden;
 }
 .filter{
