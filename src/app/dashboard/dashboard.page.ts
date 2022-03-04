@@ -191,16 +191,59 @@ function defaultChartDisplay(){
 
 }
 
-function volumeMetrics(){
-  enteredVolume = 0;
-  signedVolume = 0;
-  for (let i = 0; i < chartDisplayDataOne.length; i++){
-    enteredVolume += chartDisplayDataOne[i];
-  }
-  for (let i = 0; i < chartDisplayDataTwo.length; i++){
-    signedVolume += chartDisplayDataTwo[i];
-  }
+
+let timer;
+function startFetch({chart}) {
+  const {min, max} = chart.scales.x;
+  clearTimeout(timer);
+  timer = setTimeout(() => {
+    console.log('Fetched data between ' + min + ' and ' + max);
+    htmlChanges(true, min, max);
+    console.log(`lg[${min}]: ${labelsG[min]}\nlg[${max}]: ${labelsG[max]}`);
+    console.log(`ccdo[${min}]: ${chartDisplayDataOne[min]}\ncddo[${max}]: ${chartDisplayDataOne[max]}`);
+  }, 80);
 }
+
+  /**
+   * dynamically visualize html changes
+   */
+  function htmlChanges(endpoints = false, b = 0, e = 0) {
+    let begin = 0;
+    let end = chartDisplayDataOne.length-1;
+    if (endpoints){
+      begin = b;
+      end = e;
+    }
+    var max = chartDisplayDataOne[begin];
+    var min = chartDisplayDataOne[begin];
+    var avg;
+    var mxDate = labelsG[begin];
+    var mnDate = labelsG[begin];
+    var total = 0;
+
+    for (let i = begin; i <= end; i++){
+      let value = chartDisplayDataOne[i];
+      total += value;
+      if (value > max){
+        max = value;
+        mxDate = labelsG[i];
+      } else if (value < min) {
+        min = value;
+        mnDate = labelsG[i];
+      }
+    }
+
+
+    if (end-begin == 0){
+      avg = max;
+    } else {
+      avg = Math.round(total/(end-begin));
+    }
+    document.getElementById("high").innerText = max.toString();
+    document.getElementById("low").innerText = min.toString();
+    document.getElementById("average").innerText = avg.toString();
+
+  }
 
 
 sortStudData();
@@ -225,7 +268,7 @@ export class dashboard implements OnInit {
   currentChartTimeRange: () => void = defaultChartDisplay;
 
   ngOnInit() {
-    this.htmlChanges();
+    htmlChanges();
   }
   
   ionViewDidEnter() {
@@ -241,18 +284,12 @@ export class dashboard implements OnInit {
     this.menu.open('end')
   }
 
-  htmlChanges(){
-    volumeMetrics();
-    document.getElementById("entered").innerText = enteredVolume.toString();
-    document.getElementById("signed").innerText = signedVolume.toString();
-    document.getElementById("inSystem").innerText = (enteredVolume-signedVolume).toString();
-  }
-
   openCustom(){
     this.menu.enable(true,'custom');
     this.menu.open('custom');
   }
 
+  
   /**
    * Alert sheet for day filter options
    */
@@ -836,11 +873,12 @@ export class dashboard implements OnInit {
 
   
 
+
+  
   /**
    * Custom date range option
    * make prettier and figure out why signature data is on for sundays somehow??
    */
-
   async customDates(){
     // today to maintain max date value
     let today = new Date().toISOString().split('T')[0];
@@ -910,7 +948,7 @@ export class dashboard implements OnInit {
       } else {
         odFilter.disabled = false;
       }
-      this.htmlChanges();
+      htmlChanges();
       this.chart.destroy();
     }
 
@@ -955,8 +993,8 @@ export class dashboard implements OnInit {
               drag: {
                 enabled: true
               },
-              mode: 'x'
-              // onZoomComplete: this.startFetch
+              mode: 'x',
+              onZoomComplete: startFetch
             }
           },
 
