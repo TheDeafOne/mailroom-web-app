@@ -2,9 +2,12 @@ import { Component, ViewChild, OnInit } from '@angular/core';
 import { Chart, registerables } from 'chart.js';
 import { MenuController, AlertController } from '@ionic/angular';
 import zoomPlugin from 'chartjs-plugin-zoom';
+import annotationPlugin from 'chartjs-plugin-annotation';
 import data from 'src/assets/data/test-data.json';
+import { Options } from 'selenium-webdriver';
 
 Chart.register(zoomPlugin);
+Chart.register(annotationPlugin);
 Chart.register(...registerables)
 
 
@@ -926,18 +929,14 @@ export class dashboard implements OnInit {
   
   }
 
-  // /**
-  //  * 
-  //  */
-  // replaceChart(){
-  //   // (<HTMLInputElement> document.getElementById("one-day-filter")).disabled = false;
-  //   this.createChart();
-  // }
-
   /**
    * Generate chart for two data sets: signed on and created on data
    */
   createChart() {
+    var annoteList = [];
+    let annoteToggle = false;
+    let annoteBegin;
+    let annoteEnd;
     // check for previously made chart
     if(this.chart != null){
       // handle one day filter disabling
@@ -952,6 +951,8 @@ export class dashboard implements OnInit {
       this.chart.destroy();
     }
 
+
+    
     this.chart = new Chart(this.barChart.nativeElement, {
       // variable chart types: bar, line, and scatter
       // TODO: get scatter chart working
@@ -979,12 +980,55 @@ export class dashboard implements OnInit {
       ]
       },
       options: {
+        onClick(e) {
+          if (e.native.ctrlKey){
+            const activePoints = e.chart.getElementsAtEventForMode(e, 'nearest', {
+              intersect: false
+            }, false)
+            const [{
+              index
+            }] = activePoints;
+            console.log(labelsG[index]);
+
+            
+            if (annoteToggle){
+              annoteEnd = index;
+              annoteToggle = false;
+              if (annoteEnd-annoteBegin != 0) {
+                var eventArea: any = {
+                  type: 'box',
+                  xScaleID: 'x',
+                  yScaleID: 'y',
+                  xMax: annoteBegin-0.5,
+                  xMin: annoteEnd-0.5,
+                  yMax: 0,
+                  yMin: 50,
+                  backgroundColor: 'rgba(255,99,132,0.05)',
+                  borderWidth: 2,
+                };
+
+
+                annoteList.push(eventArea);
+                e.chart.options.plugins.annotation.annotations = annoteList;
+                e.chart.update();
+              } 
+            } else {
+              annoteToggle = true;
+              annoteBegin = index;
+            }
+          }
+
+          
+        },
         plugins: {
           // zoom plugin for wheel and drag
           // TODO: possibly get pan working
           zoom: {
             limits: {
-              x: {min: 'original', max: 'original'},
+              x: {
+                min: 'original', 
+                max: 'original'
+              },
             },
             zoom: {
               wheel: {
@@ -997,10 +1041,17 @@ export class dashboard implements OnInit {
               onZoomComplete: startFetch
             }
           },
+          annotation: {
+            annotations: [
+             
+            ]
+          },
 
           legend: {
             display: false,
-          }
+          },
+
+          
         },
         responsive: true,
         maintainAspectRatio: false,
