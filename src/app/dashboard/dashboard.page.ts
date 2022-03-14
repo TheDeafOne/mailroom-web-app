@@ -1,11 +1,13 @@
-import { Component, ViewChild, OnInit } from '@angular/core';
+import { Component, ViewChild, OnInit, NgModule } from '@angular/core';
 import { Chart, registerables } from 'chart.js';
 import { MenuController, AlertController } from '@ionic/angular';
+import * as FileSaver from 'file-saver';
 import zoomPlugin from 'chartjs-plugin-zoom';
 import annotationPlugin from 'chartjs-plugin-annotation';
 import data from 'src/assets/data/test-data.json';
-import { Options } from 'selenium-webdriver';
 
+
+const XLSX = require('exceljs');
 Chart.register(zoomPlugin);
 Chart.register(annotationPlugin);
 Chart.register(...registerables)
@@ -252,14 +254,13 @@ function startFetch({chart}) {
 sortStudData();
 defaultChartDisplay();
 
-
-
-
 @Component({
   selector: 'app-dashboard',
   templateUrl: 'dashboard.page.html',
-  styleUrls: ['dashboard.page.scss'],
+  styleUrls: ['dashboard.page.scss']
 })
+
+
 
 export class dashboard implements OnInit {
   chartType: any = 'bar';
@@ -292,7 +293,26 @@ export class dashboard implements OnInit {
     this.menu.open('custom');
   }
 
-  
+  /**
+   * give options for exporting excel data
+   */
+  async excelExport(){
+    const workbook = new XLSX.Workbook();
+    const worksheet = workbook.addWorksheet('sheet1');
+    worksheet.columns = [
+      { header: 'Id', key: 'id' },
+      { header: 'Name', key: 'name' },
+      { header: 'Age', key: 'age' }
+    ];
+    worksheet.addRow({id:1,name:"joe",age:"1"});
+
+    const blobType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8';
+    workbook.xlsx.writeBuffer().then(data => {
+      const blob = new Blob([data], {type: blobType});
+      FileSaver.saveAs(blob, 'ExcelExport_' + new Date());
+    })
+  }
+
   /**
    * Alert sheet for day filter options
    */

@@ -46,8 +46,13 @@
           </ion-card-header>
 
           <ion-card-content>
-            
-      
+            <div>
+              <!-- <a href="excel.xslx" download="excelSheet.xlsx"> -->
+                <ion-button id="excel_download" (click)="excelExport()">
+                  <ion-icon name="download-outline"></ion-icon>
+                </ion-button>
+              <!-- </a> -->
+            </div>
            
           </ion-card-content>
         </ion-card>
@@ -66,9 +71,7 @@
               </ion-card-header>
             </div>
 
-            <div>
-              <ion-button id="one-day-filter" class="filter" (click)="dayFilter()" disabled="true">Day</ion-button>
-            </div>
+            
 
             <div>
               <ion-button class="filter" (click)="packageFilter()">Package</ion-button>
