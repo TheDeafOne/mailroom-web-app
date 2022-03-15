@@ -1,6 +1,7 @@
-import { Component, ViewChild, OnInit, NgModule } from '@angular/core';
+import { Component, ViewChild, OnInit } from '@angular/core';
 import { Chart, registerables } from 'chart.js';
 import { MenuController, AlertController } from '@ionic/angular';
+
 import * as FileSaver from 'file-saver';
 import zoomPlugin from 'chartjs-plugin-zoom';
 import annotationPlugin from 'chartjs-plugin-annotation';
@@ -266,6 +267,7 @@ export class dashboard implements OnInit {
   chartType: any = 'bar';
   @ViewChild('barChart') barChart;
   
+  
   chart: any;
   colorArray: any;
   constructor(private menu: MenuController, public alertController: AlertController) {}
@@ -293,6 +295,8 @@ export class dashboard implements OnInit {
     this.menu.open('custom');
   }
 
+ 
+
   /**
    * give options for exporting excel data
    */
@@ -300,11 +304,28 @@ export class dashboard implements OnInit {
     const workbook = new XLSX.Workbook();
     const worksheet = workbook.addWorksheet('sheet1');
     worksheet.columns = [
-      { header: 'Id', key: 'id' },
+      { header: 'ID', key: 'id' },
       { header: 'Name', key: 'name' },
-      { header: 'Age', key: 'age' }
+      { header: 'Box', key: 'box' },
+      { header: 'Package', key: 'package'},
+      { header: 'Container Type', key: 'containerType' },
+      { header: 'Shelf', key: 'shelf' },
+      { header: 'Barcode', key: 'barcode'},
+      { header: 'Created On', key: 'createdOn'},
+      { header: 'Signed On', key: 'signedOn'},
+      { header: 'Email Sent', key: 'emailSent'}
     ];
-    worksheet.addRow({id:1,name:"joe",age:"1"});
+    // worksheet.addRow({id:1,name:"joe",age:"1"});
+
+    for (var val in data){
+      val = data[val]
+      worksheet.addRow(
+        {
+          id:val["ID_Num"], name:val["Name"], box:val["Box"], package:val["Package"], 
+          containerType:val["ContainerType"], shelf:val["shelf"], barcode:val["Barcode"],
+          createdOn:val["CreatedOn"], signedOn:val["SignedOn"], emailSent:val["EmailSent"]
+        })
+    }
 
     const blobType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8';
     workbook.xlsx.writeBuffer().then(data => {
