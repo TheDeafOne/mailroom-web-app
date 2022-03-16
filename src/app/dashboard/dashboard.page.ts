@@ -298,7 +298,7 @@ export class dashboard implements OnInit {
   excelColumns = {
     id: { title: "ID", lookup: "ID_Num", value: true },
     name: { title: "Name", lookup: "Name", value: true },
-    box: { box: "Box", lookup: "Box", value: true},
+    box: { title: "Box", lookup: "Box", value: true},
     package: { title: "Package", lookup: "Package", value: true },
     containerType: { title: "Container Type", lookup: "ContainerType", value: true },
     shelf: { title: "Shelf", lookup: "Shelf", value: true },
