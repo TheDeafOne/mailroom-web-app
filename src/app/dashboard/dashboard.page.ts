@@ -295,37 +295,120 @@ export class dashboard implements OnInit {
     this.menu.open('custom');
   }
 
- 
+  excelColumns = {
+    id: { title: "ID", lookup: "ID_Num", value: true },
+    name: { title: "Name", lookup: "Name", value: true },
+    box: { box: "Box", lookup: "Box", value: true},
+    package: { title: "Package", lookup: "Package", value: true },
+    containerType: { title: "Container Type", lookup: "ContainerType", value: true },
+    shelf: { title: "Shelf", lookup: "Shelf", value: true },
+    barcode: { title: "Barcode", lookup: "Barcode", value: true },
+    signedOn: { title: "Signed On", lookup: "SignedOn", value: true },
+    createdOn: { title: "Created On", lookup: "CreatedOn", value: true },
+    emailSent: { title: "Email Sent", lookup: "EmailSent", value: true }
+  };
+
+
+  filterOption(val, valHold){
+    let option = {
+      name: val,
+      type: 'checkbox',
+      label: val,
+      value: val,
+      handler: () => {
+        valHold[val].value = !valHold[val].value;
+      },
+      checked: valHold[val].value
+    }
+    return option;
+  }
+
+  async excelDataFilter(){
+    let inputArray = []
+    for (const val in this.excelColumns){
+      inputArray.push(this.filterOption(val,this.excelColumns));
+    }
+
+    const alert = await this.alertController.create({
+      cssClass: 'my-custom-class',
+      header: 'Alert',
+      inputs: inputArray,
+      buttons: [
+        {
+          text: 'Filtered',
+          cssClass: 'filter-button',
+          handler: () => {
+            //TODO separate filtered data
+          }
+        },
+        {
+          text: 'All',
+          cssClass: 'filter-button',
+          handler: () => {
+            this.excelExport();
+          }
+        }, 
+        
+      ]
+    });
+  
+    await alert.present();
+  }
 
   /**
    * give options for exporting excel data
    */
   async excelExport(){
     const workbook = new XLSX.Workbook();
-    const worksheet = workbook.addWorksheet('sheet1');
-    worksheet.columns = [
-      { header: 'ID', key: 'id' },
-      { header: 'Name', key: 'name' },
-      { header: 'Box', key: 'box' },
-      { header: 'Package', key: 'package'},
-      { header: 'Container Type', key: 'containerType' },
-      { header: 'Shelf', key: 'shelf' },
-      { header: 'Barcode', key: 'barcode'},
-      { header: 'Created On', key: 'createdOn'},
-      { header: 'Signed On', key: 'signedOn'},
-      { header: 'Email Sent', key: 'emailSent'}
-    ];
-    // worksheet.addRow({id:1,name:"joe",age:"1"});
+    const allData = workbook.addWorksheet('All Data');
+    const filteredData = workbook.addWorksheet('Filtered Data');
+
+    let inputList = []
+    for (var val in this.excelColumns){
+      if (this.excelColumns[val].value){
+        // get index of val in excelColumns
+        inputList.push({header: this.excelColumns[val].title, key: val});
+      }
+    }
+
+    // set metadata for worksheets 
+    allData.columns = inputList;
+    filteredData.columns = inputList;
 
     for (var val in data){
-      val = data[val]
-      worksheet.addRow(
-        {
-          id:val["ID_Num"], name:val["Name"], box:val["Box"], package:val["Package"], 
-          containerType:val["ContainerType"], shelf:val["shelf"], barcode:val["Barcode"],
-          createdOn:val["CreatedOn"], signedOn:val["SignedOn"], emailSent:val["EmailSent"]
-        })
+      let element = data[val];
+      let row = {};
+      for (var key in this.excelColumns){
+        if (this.excelColumns[key].value){
+          let value = element[this.excelColumns[key].lookup];
+          if (value == null){
+            row[key] = "NA";
+          } else {
+            row[key] = value;
+          }
+        }
+      }
+      allData.addRow(row);
     }
+    let fData = [].concat.apply([], Object.values(createdOnData));
+
+    for (var val in fData){
+      let element = fData[val];
+      let row = {};
+      for (var key in this.excelColumns){
+        if (this.excelColumns[key].value){
+          let value = element[this.excelColumns[key].lookup];
+          if (value == null){
+            row[key] = "NA";
+          } else {
+            row[key] = value;
+          }
+        }
+      }
+      filteredData.addRow(row);
+    }
+
+
 
     const blobType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8';
     workbook.xlsx.writeBuffer().then(data => {
