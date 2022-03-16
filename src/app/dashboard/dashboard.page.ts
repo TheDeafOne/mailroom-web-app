@@ -313,7 +313,7 @@ export class dashboard implements OnInit {
     let option = {
       name: val,
       type: 'checkbox',
-      label: val,
+      label: valHold[val].title,
       value: val,
       handler: () => {
         valHold[val].value = !valHold[val].value;
