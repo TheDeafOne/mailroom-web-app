@@ -47,7 +47,7 @@
 
           <ion-card-content>
             <div>
-              <ion-button (click)="excelExport()">
+              <ion-button (click)="excelDataFilter()">
                 <ion-icon name="cloud-download-outline"></ion-icon>                
               </ion-button>
 
@@ -109,7 +109,7 @@
             <div class="chart-time-container">
                 
               <div class="chart-time">
-                <ion-button fill="clear" (click)="oneDay()"> 
+                <ion-button fill="clear" (click)="oneDay()" id="one-day-filter"> 
                   1d
                 </ion-button>
               </div>
