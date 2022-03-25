@@ -41,25 +41,42 @@ canvas {
     
 }
 
+
+.chart-manip{
+    display: flex;
+    overflow: hidden;
+}
 // filters
 .chart-filters-wrapper{
     display:flex;
-    justify-content: left;
-    width: 100%;
     overflow: hidden;
+    float: left;
+    flex-grow: 1;
 }
-.filter{
+.chart-filter{
     --border-radius: 0px;
     --background: white;
     --box-shadow: 0px;
     padding: 0 !important;
     margin: 0 !important;
     height: 100%;
-    width: 100%;  
+    float: left;
 }
-.filter-button{
-    margin: 0 !important;
+
+.chart-option-wrapper{
+    display: flex;
+    position: relative;
+    float: right;   
+    margin-right: 25px;  
+}
+
+.chart-option{
+    --border-radius: 0px;
+    --background: white;
+    --box-shadow: 0px;
     padding: 0 !important;
+    margin: 0 !important;
+    height: 100%;
 }
 
 .chart-time-container{
@@ -81,6 +98,8 @@ canvas {
     float: left;
     margin-right: 10%;
 }
+
+
 
 // volume display
 .volume-card{

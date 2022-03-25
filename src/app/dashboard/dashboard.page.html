@@ -47,11 +47,10 @@
 
           <ion-card-content>
             <div>
-              <ion-button (click)="excelDataFilter()">
+              <ion-button (click)="excelDataFilter()" fill="clear">
                 <ion-icon name="cloud-download-outline"></ion-icon>                
               </ion-button>
 
-              
             </div>
            
           </ion-card-content>
@@ -64,36 +63,58 @@
 
       <div class="chart">
         <ion-card class="chart-card">
-          <div class="chart-filters-wrapper">
-            <div>
-              <ion-card-header>
-                Filters
-              </ion-card-header>
-            </div>
 
+          <!-- this is the float parent element -->
+          <div class="chart-manip"> 
+
+          <!-- this is the first float child element, everything inside is already handled -->
+              <div class="chart-filters-wrapper">
+                <div>
+                  <ion-card-header>
+                    Filters
+                  </ion-card-header>
+                </div>
+
+                <div>
+                  <ion-button class="chart-filter" (click)="packageFilter()">Package</ion-button>
+                </div>
+
+                <div>
+                  <ion-button class="chart-filter" (click)="courierFilter()">Courier</ion-button>
+                </div>
+
+                <div>
+                  <ion-button class="chart-filter" (click)="recipientFilter()">Recipient</ion-button>
+                </div>
+                
+                
+              </div>
+
+              <div class="chart-option-wrapper">
+
+                <div>
+                  <ion-button class="chart-option" (click)="showTypeOptions()">Chart Type</ion-button>
+                </div>
+
+                <div>
+                  <ion-select #chartChange [hidden]="true" value="bar" interface="popover" placeholder="bar" (ionChange)="changeChartType($event)">
+                    <ion-select-option value="bar">Bar Chart</ion-select-option>
+                    <ion-select-option value="line">Line Chart</ion-select-option>
+                  </ion-select>
+                </div>
+
+                <div>
+                  <ion-button class="chart-option" (click)="addAnnotation()" fill="clear">
+                    Annotate
+                  </ion-button>
+                </div>
+                
+              </div>
             
-
-            <div>
-              <ion-button class="filter" (click)="packageFilter()">Package</ion-button>
+              
             </div>
 
-            <div>
-              <ion-button class="filter" (click)="courierFilter()">Courier</ion-button>
-            </div>
 
-            <div>
-              <ion-button class="filter" (click)="recipientFilter()">Recipient</ion-button>
-            </div>
-            
-            <div>
-              <ion-item lines="none">
-                <ion-select value="bar" interface="popover" placeholder="bar" (ionChange)="changeChartType($event)">
-                  <ion-select-option value="bar">Bar Chart</ion-select-option>
-                  <ion-select-option value="line">Line Chart</ion-select-option>
-                </ion-select>
-              </ion-item>
-            </div>
-          </div>
 
           <ion-card-content class="chart-card-content">
             <!-- chart display -->
