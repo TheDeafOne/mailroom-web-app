@@ -1,11 +1,13 @@
 import { Component, ViewChild, OnInit } from '@angular/core';
 import { Chart, registerables } from 'chart.js';
-import { MenuController, AlertController } from '@ionic/angular';
+import { MenuController, AlertController, IonSelect } from '@ionic/angular';
 
 import * as FileSaver from 'file-saver';
 import zoomPlugin from 'chartjs-plugin-zoom';
 import annotationPlugin from 'chartjs-plugin-annotation';
 import data from 'src/assets/data/test-data.json';
+import { create } from 'domain';
+import { Placeholder } from '@angular/compiler/src/i18n/i18n_ast';
 
 
 const XLSX = require('exceljs');
@@ -203,10 +205,7 @@ function startFetch({chart}) {
   const {min, max} = chart.scales.x;
   clearTimeout(timer);
   timer = setTimeout(() => {
-    console.log('Fetched data between ' + min + ' and ' + max);
     htmlChanges(true, min, max);
-    console.log(`lg[${min}]: ${labelsG[min]}\nlg[${max}]: ${labelsG[max]}`);
-    console.log(`ccdo[${min}]: ${chartDisplayDataOne[min]}\ncddo[${max}]: ${chartDisplayDataOne[max]}`);
   }, 80);
 }
 
@@ -266,7 +265,8 @@ defaultChartDisplay();
 export class dashboard implements OnInit {
   chartType: any = 'bar';
   @ViewChild('barChart') barChart;
-  
+  @ViewChild('chartChange') chartChange: IonSelect;
+
   
   chart: any;
   colorArray: any;
@@ -417,6 +417,7 @@ export class dashboard implements OnInit {
     })
   }
 
+  //TODO: optimize this for easier reading and scalability (reference to excel export for examples of how to do so)
   /**
    * Alert sheet for day filter options
    */
@@ -776,6 +777,11 @@ export class dashboard implements OnInit {
   }
 
   
+  showTypeOptions(){
+    this.chartChange.open();
+  }
+
+  
   /**
    * Function that displays current day's data
    */
@@ -844,7 +850,7 @@ export class dashboard implements OnInit {
 
 
   /**
-   * Function that displays all data
+   * Function that displays all possible data
    */
   maxData(){
     this.currentChartTimeRange = this.maxData;
@@ -880,7 +886,9 @@ export class dashboard implements OnInit {
 
 
   /**
-   * A function that displays the given number of months
+   * A function that displays the given number of months.
+   * This is done by indexing at the current month and iterating backwards until n months are parsed.
+   * Reverse indexing allows for easier month parsing and year/month correction for cross-year lookups
    * @param monthNum number of months to display
    */
   nMonths(monthNum){
@@ -907,11 +915,15 @@ export class dashboard implements OnInit {
           
           // push created and signed date to chart display
           labelsG.push(currDate.toDateString());
+
+          //created
           if (currDate.toDateString() in createdOnData){
-            chartDisplayDataOne.push(createdOnData[currDate.toDateString()].length);
+            chartDisplayDataOne.push(createdOnData[currDate.toDateString()].length); 
           } else {
             chartDisplayDataOne.push(0);
           }
+
+          // signed
           if (currDate.toDateString() in signedOnData) {
             chartDisplayDataTwo.push(signedOnData[currDate.toDateString()].length)
           } else {
@@ -933,7 +945,8 @@ export class dashboard implements OnInit {
   /**
    * Display data from start date to end date. For example:
    * begin: 1-1-2021, end: 1-2-2021
-   * would show all the signed on/created on data for the two days January 1st 2021 through January 2nd 2021, including no-enter days
+   * would show all the signed on/created on data for the two days January 1st 2021 through January 2nd 2021, 
+   * including no-enter days.
    * no-enter days are sundays, holidays, etc. where no packages will be entered or signed.
    * @param begin date to start displaying data on
    * @param end date to stop displaying data on
@@ -942,12 +955,12 @@ export class dashboard implements OnInit {
   beginCDate: string;
   endCDate: string;
   applyCustomDates(){
+    // set filter application and prep chart for use
     this.currentChartTimeRange = this.applyCustomDates;
     clearChartXY();
 
     let currDate = new Date(this.beginCDate);
     let endDate = new Date(this.endCDate);
-
 
     // check that currDate is before endDate
     if (currDate.toISOString() < endDate.toISOString()){
@@ -997,9 +1010,6 @@ export class dashboard implements OnInit {
     // visualize chart
     this.createChart();
   }
-
-  
-
 
   
   /**
@@ -1053,30 +1063,117 @@ export class dashboard implements OnInit {
   
   }
 
+  annoteList = []
+  async addAnnotation(){
+    let today = new Date().toISOString().split('T')[0];
+
+    const alert = await this.alertController.create({
+      cssClass: 'my-custom-class',
+      header: 'Custom Range',
+
+      inputs: [
+        {
+          name: 'begin',
+          type: 'date',
+          min: '2020-01-01',
+          max: today,
+          label: 'Begin',
+          value: this.beginCDate
+        },
+        {
+          name: 'end',
+          type: 'date',
+          min: '2020-01-01',
+          max: today,
+          label: 'End',
+          value: this.endCDate
+        },
+        {
+          name: 'paragraph',
+          type: 'textarea',
+          label: 'Notes',
+          placeholder: 'notes'
+        },
+      ],
+      buttons: [
+        {
+          text: 'Cancel'
+        },
+        {
+          text: 'Ok',
+          // set current begin and end date values and call to display data
+          handler: (inputs) => {
+            // this.beginCDate = inputs["begin"];
+            // this.endCDate = inputs["end"];    
+            // this.applyCustomDates();
+            let annoteBegin = labelsG.indexOf(new Date(inputs["begin"]).toDateString());
+            let annoteEnd = labelsG.indexOf(new Date(inputs["end"]).toDateString());
+            var eventArea: any = {
+              id: "boxAnnote_" + annoteBegin + "" + annoteEnd,
+              type: 'box',
+              xScaleID: 'x',
+              yScaleID: 'y',
+              xMax: annoteBegin-0.5,
+              xMin: annoteEnd-0.5,
+              yMax: 0,
+              yMin: 50,
+              backgroundColor: 'rgba(255,99,132,0.05)',
+              borderWidth: 2,
+              click: () => {
+                
+              },
+              enter: (anev) => {
+                console.log("brightening");
+                anev.element.options.backgroundColor = 'rgba(255,99,132,0.1)';
+                console.log(anev.element.options.backgroundColor);
+                this.chart.update();
+              },
+              leave: (anev) => {
+                console.log("dimming")
+                anev.element.options.backgroundColor = 'rgba(255,99,132,0.05)';
+                console.log(anev.element.options.backgroundColor);
+                this.chart.update();
+              }
+            };
+
+
+            this.annoteList.push(eventArea);
+            this.chart.options.plugins.annotation.annotations = this.annoteList;
+            this.chart.update();
+
+
+
+
+          }
+        }, 
+      ]
+    });
+    await alert.present();
+
+  }
+
   /**
    * Generate chart for two data sets: signed on and created on data
    */
   createChart() {
-    var annoteList = [];
-    let annoteToggle = false;
-    let annoteBegin;
-    let annoteEnd;
     // check for previously made chart
     if(this.chart != null){
       // handle one day filter disabling
       // required to keep user from using mon-sat filters on a one day chart
       let odFilter = (<HTMLInputElement> document.getElementById("one-day-filter"));
+      let anOption = (<HTMLInputElement> document.getElementById("annotate-option"));
       if(this.currentChartTimeRange == this.oneDay){
         odFilter.disabled = true;
+        anOption.disabled = true;
       } else {
         odFilter.disabled = false;
+        anOption.disabled = false;
       }
       htmlChanges();
       this.chart.destroy();
     }
 
 
-    
     this.chart = new Chart(this.barChart.nativeElement, {
       // variable chart types: bar, line, and scatter
       // TODO: get scatter chart working
@@ -1104,46 +1201,6 @@ export class dashboard implements OnInit {
       ]
       },
       options: {
-        onClick(e) {
-          if (e.native.ctrlKey){
-            const activePoints = e.chart.getElementsAtEventForMode(e, 'nearest', {
-              intersect: false
-            }, false)
-            const [{
-              index
-            }] = activePoints;
-            console.log(labelsG[index]);
-
-            
-            if (annoteToggle){
-              annoteEnd = index;
-              annoteToggle = false;
-              if (annoteEnd-annoteBegin != 0) {
-                var eventArea: any = {
-                  type: 'box',
-                  xScaleID: 'x',
-                  yScaleID: 'y',
-                  xMax: annoteBegin-0.5,
-                  xMin: annoteEnd-0.5,
-                  yMax: 0,
-                  yMin: 50,
-                  backgroundColor: 'rgba(255,99,132,0.05)',
-                  borderWidth: 2,
-                };
-
-
-                annoteList.push(eventArea);
-                e.chart.options.plugins.annotation.annotations = annoteList;
-                e.chart.update();
-              } 
-            } else {
-              annoteToggle = true;
-              annoteBegin = index;
-            }
-          }
-
-          
-        },
         plugins: {
           // zoom plugin for wheel and drag
           // TODO: possibly get pan working
