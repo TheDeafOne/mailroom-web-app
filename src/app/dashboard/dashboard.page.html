@@ -76,6 +76,10 @@
                 </div>
 
                 <div>
+                  <ion-button class="chart-filter" (click)="dayFilter()" disabled="true" id="one-day-filter">Day</ion-button>
+                </div>
+
+                <div>
                   <ion-button class="chart-filter" (click)="packageFilter()">Package</ion-button>
                 </div>
 
@@ -104,7 +108,7 @@
                 </div>
 
                 <div>
-                  <ion-button class="chart-option" (click)="addAnnotation()" fill="clear">
+                  <ion-button class="chart-option" (click)="addAnnotation()" fill="clear" id="annotate-option" disabled="true">
                     Annotate
                   </ion-button>
                 </div>
@@ -130,7 +134,7 @@
             <div class="chart-time-container">
                 
               <div class="chart-time">
-                <ion-button fill="clear" (click)="oneDay()" id="one-day-filter"> 
+                <ion-button fill="clear" (click)="oneDay()"> 
                   1d
                 </ion-button>
               </div>
