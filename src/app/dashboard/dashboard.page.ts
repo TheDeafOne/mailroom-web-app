@@ -1198,14 +1198,13 @@ export class dashboard implements OnInit {
         odFilter.disabled = false;
         anOption.disabled = false;
       }
-      console.log(savedAnnotations)
+
       for (var val in savedAnnotations){
         let annotation = savedAnnotations[val];
-        console.log(savedAnnotations[val]);
-        console.log(labelsG);
-
-        annotation.xMin = labelsG.indexOf(annotation.dates.bDate)-0.5;
-        annotation.xMax = labelsG.indexOf(annotation.dates.eDate)+0.5;
+        
+        
+        annotation.xMin = labelsG.indexOf(annotation.dates.begin)-0.5;
+        annotation.xMax = labelsG.indexOf(annotation.dates.end)+0.5;
         
         console.log(annotation);
       }
