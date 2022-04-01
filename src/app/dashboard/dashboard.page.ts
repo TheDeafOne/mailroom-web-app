@@ -6,8 +6,7 @@ import * as FileSaver from 'file-saver';
 import zoomPlugin from 'chartjs-plugin-zoom';
 import annotationPlugin from 'chartjs-plugin-annotation';
 import data from 'src/assets/data/test-data.json';
-import { create } from 'domain';
-import { Placeholder } from '@angular/compiler/src/i18n/i18n_ast';
+import { bindCallback } from 'rxjs';
 
 
 const XLSX = require('exceljs');
@@ -28,6 +27,7 @@ var chartDisplayDataOne = [];
 var chartDisplayDataTwo = [];
 var CDLS = []
 var SDLS = []
+var savedAnnotations = []
 var enteredVolume = 0;
 var signedVolume = 0;
 
@@ -250,7 +250,7 @@ function startFetch({chart}) {
 
   }
 
-
+  
 sortStudData();
 defaultChartDisplay();
 
@@ -424,7 +424,7 @@ export class dashboard implements OnInit {
   async dayFilter() {
     const alert = await this.alertController.create({
       cssClass: 'my-custom-class',
-      header: 'Alert',
+      header: 'Day',
       inputs: [
         {
           name: 'monday',
@@ -522,7 +522,7 @@ export class dashboard implements OnInit {
   async packageFilter() {
     const alert = await this.alertController.create({
       cssClass: 'my-custom-class',
-      header: 'Alert',
+      header: 'Package',
       inputs: [
         {
           name: 'box',
@@ -600,7 +600,7 @@ export class dashboard implements OnInit {
   async courierFilter() {
     const alert = await this.alertController.create({
       cssClass: 'my-custom-class',
-      header: 'Alert',
+      header: 'Courier',
       inputs: [
         {
           name: 'amazon',
@@ -697,7 +697,7 @@ export class dashboard implements OnInit {
   async recipientFilter() {
     const alert = await this.alertController.create({
       cssClass: 'my-custom-class',
-      header: 'Alert',
+      header: 'Recipient',
       inputs: [
         {
           name: 'student',
@@ -721,6 +721,7 @@ export class dashboard implements OnInit {
           checked: recipientFilters["faculty"]
         },
 
+        //TODO: get working box range
         {
           name: 'box-range',
           type: 'checkbox',
@@ -1063,13 +1064,12 @@ export class dashboard implements OnInit {
   
   }
 
-  annoteList = []
   async addAnnotation(){
     let today = new Date().toISOString().split('T')[0];
 
     const alert = await this.alertController.create({
       cssClass: 'my-custom-class',
-      header: 'Custom Range',
+      header: 'Add Annotation',
 
       inputs: [
         {
@@ -1103,54 +1103,83 @@ export class dashboard implements OnInit {
           text: 'Ok',
           // set current begin and end date values and call to display data
           handler: (inputs) => {
-            // this.beginCDate = inputs["begin"];
-            // this.endCDate = inputs["end"];    
-            // this.applyCustomDates();
-            let annoteBegin = labelsG.indexOf(new Date(inputs["begin"]).toDateString());
-            let annoteEnd = labelsG.indexOf(new Date(inputs["end"]).toDateString());
+            let bDate = new Date(inputs["begin"]);
+            bDate.setDate(bDate.getDate() + 1);
+            let eDate = new Date(inputs["end"]);
+            eDate.setDate(eDate.getDate() + 1);
+            let annoteBegin = labelsG.indexOf(bDate.toDateString());
+            let annoteEnd = labelsG.indexOf(eDate.toDateString());
+
             var eventArea: any = {
               id: "boxAnnote_" + annoteBegin + "" + annoteEnd,
               type: 'box',
               xScaleID: 'x',
-              yScaleID: 'y',
               xMax: annoteBegin-0.5,
-              xMin: annoteEnd-0.5,
+              xMin: annoteEnd+0.5,
               yMax: 0,
               yMin: 50,
               backgroundColor: 'rgba(255,99,132,0.05)',
               borderWidth: 2,
-              click: () => {
+              label: {
+                enabled: false,
+                borderWidth: 0,
+                drawTime: 'afterDatasetsDraw',
+                color: 'black',
+                content: (ctx) => [inputs["paragraph"]],
+                textAlign: 'center'
+              },
+              dblClick: (ctx, event) => {
+                // toggleLabel(ctx, event, );
                 
               },
-              enter: (anev) => {
-                console.log("brightening");
-                anev.element.options.backgroundColor = 'rgba(255,99,132,0.1)';
-                console.log(anev.element.options.backgroundColor);
-                this.chart.update();
+              enter: (ctx, event) => {
+                // anev.element.options.backgroundColor = 'rgba(255,99,132,0.1)';
+                this.toggleLabel(ctx,event);
               },
-              leave: (anev) => {
-                console.log("dimming")
-                anev.element.options.backgroundColor = 'rgba(255,99,132,0.05)';
-                console.log(anev.element.options.backgroundColor);
-                this.chart.update();
+              leave: (ctx, event) => {
+                // ctx.element.options.backgroundColor = 'rgba(255,99,132,0.05)';
+                this.toggleLabel(ctx, event);
+              },
+              dates: {
+                begin: bDate.toDateString(),
+                end: eDate.toDateString()
               }
             };
 
+            savedAnnotations.push(eventArea);
 
-            this.annoteList.push(eventArea);
-            this.chart.options.plugins.annotation.annotations = this.annoteList;
             this.chart.update();
-
-
-
 
           }
         }, 
       ]
     });
+
     await alert.present();
 
   }
+
+  toggleLabel(ctx, event){
+    const AChart = ctx.chart;
+    const annotationOpts = 
+    AChart.options.plugins.annotation.annotations;
+    for (var val in annotationOpts){
+      if (annotationOpts[val]["id"] === ctx.id){
+        let annotation = annotationOpts[val];
+        annotation.label.enabled = !annotation.label.enabled;
+        // matching label visibility to mouse event:
+        // let position = {
+        //   x: (event.x / ctx.chart.chartArea.width * 500) + '%', 
+        //   y: (event.y / ctx.chart.chartArea.height * 100) + '%'
+        // };
+        annotation.label.position = 'start';
+
+        AChart.update();
+        break;
+      }
+    }
+  }
+  
 
   /**
    * Generate chart for two data sets: signed on and created on data
@@ -1168,6 +1197,17 @@ export class dashboard implements OnInit {
       } else {
         odFilter.disabled = false;
         anOption.disabled = false;
+      }
+      console.log(savedAnnotations)
+      for (var val in savedAnnotations){
+        let annotation = savedAnnotations[val];
+        console.log(savedAnnotations[val]);
+        console.log(labelsG);
+
+        annotation.xMin = labelsG.indexOf(annotation.dates.bDate)-0.5;
+        annotation.xMax = labelsG.indexOf(annotation.dates.eDate)+0.5;
+        
+        console.log(annotation);
       }
       htmlChanges();
       this.chart.destroy();
@@ -1223,9 +1263,7 @@ export class dashboard implements OnInit {
             }
           },
           annotation: {
-            annotations: [
-             
-            ]
+            annotations: savedAnnotations
           },
 
           legend: {
