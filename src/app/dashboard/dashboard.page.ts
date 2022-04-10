@@ -7,6 +7,7 @@ import zoomPlugin from 'chartjs-plugin-zoom';
 import annotationPlugin from 'chartjs-plugin-annotation';
 import data from 'src/assets/data/test-data.json';
 import { bindCallback } from 'rxjs';
+import { proxyInputs } from '@ionic/angular/directives/proxies-utils';
 
 
 const XLSX = require('exceljs');
@@ -696,7 +697,8 @@ export class dashboard implements OnInit {
    */
   async recipientFilter() {
     const alert = await this.alertController.create({
-      cssClass: 'my-custom-class',
+      cssClass: 'recipient-filter-group',
+
       header: 'Recipient',
       inputs: [
         {
@@ -723,6 +725,7 @@ export class dashboard implements OnInit {
 
         //TODO: get working box range
         {
+          cssClass: 'box-range',
           name: 'box-range',
           type: 'checkbox',
           label: 'Box Range',
@@ -778,8 +781,8 @@ export class dashboard implements OnInit {
   }
 
   
-  showTypeOptions(){
-    this.chartChange.open();
+  showTypeOptions(event){
+    this.chartChange.open(event);
   }
 
   
@@ -962,16 +965,15 @@ export class dashboard implements OnInit {
 
     let currDate = new Date(this.beginCDate);
     let endDate = new Date(this.endCDate);
-
+    // update currDateStr
+    let currDateStr = currDate.toDateString();
     // check that currDate is before endDate
     if (currDate.toISOString() < endDate.toISOString()){
 
       // update display data for every day between currDate and endDate
       while (currDate.toISOString() <= endDate.toISOString()){
 
-        // update currDateStr
-        let currDateStr = currDate.toDateString();
-
+  
         // add to labels
         labelsG.push(currDateStr);
 
@@ -989,20 +991,21 @@ export class dashboard implements OnInit {
         // update currDate
         currDate.setDate(currDate.getDate() + 1);
       }
-    // } else if (currDate.toISOString() == endDate.toISOString()){
-    //   if (!(currDateStr in createdOnData)){
-    //     createdOnData[currDateStr] = [];
-    //     signedOnData[currDateStr] = [];
-    //   }
-    //   let tmpc = createdOnData[CDLS[CDLS.length-1]];
-    //   let tmps = signedOnData[SDLS[SDLS.length-1]];
-    //   createdOnData[CDLS[CDLS.length-1]] = createdOnData[currDateStr];
-    //   signedOnData[CDLS[CDLS.length-1]] = signedOnData[currDateStr];
+    } else if (currDate.toISOString() == endDate.toISOString()){
+      if (!(currDateStr in createdOnData)){
+        createdOnData[currDateStr] = [];
+        signedOnData[currDateStr] = [];
+      }
 
-    //   this.oneDay();
+      let tmpc = createdOnData[CDLS[CDLS.length-1]];
+      let tmps = signedOnData[SDLS[SDLS.length-1]];
+      createdOnData[CDLS[CDLS.length-1]] = createdOnData[currDateStr];
+      signedOnData[CDLS[CDLS.length-1]] = signedOnData[currDateStr];
 
-    //   createdOnData[CDLS[CDLS.length-1]] = tmpc;
-    //   signedOnData[SDLS[SDLS.length-1]] = tmps;
+      this.oneDay();
+
+      createdOnData[CDLS[CDLS.length-1]] = tmpc;
+      signedOnData[SDLS[SDLS.length-1]] = tmps;
 
     } else {
       console.log("handle error message");
@@ -1113,11 +1116,8 @@ export class dashboard implements OnInit {
             var eventArea: any = {
               id: "boxAnnote_" + annoteBegin + "" + annoteEnd,
               type: 'box',
-              xScaleID: 'x',
               xMax: annoteBegin-0.5,
               xMin: annoteEnd+0.5,
-              yMax: 0,
-              yMin: 50,
               backgroundColor: 'rgba(255,99,132,0.05)',
               borderWidth: 2,
               label: {
@@ -1128,9 +1128,10 @@ export class dashboard implements OnInit {
                 content: (ctx) => [inputs["paragraph"]],
                 textAlign: 'center'
               },
-              dblClick: (ctx, event) => {
-                // toggleLabel(ctx, event, );
-                
+              click: (ctx, event) => {
+                if (event.native.ctrlKey){
+                  this.annotationEdit(ctx);
+                }
               },
               enter: (ctx, event) => {
                 // anev.element.options.backgroundColor = 'rgba(255,99,132,0.1)';
@@ -1154,26 +1155,107 @@ export class dashboard implements OnInit {
         }, 
       ]
     });
-
     await alert.present();
-
   }
 
-  toggleLabel(ctx, event){
+  async annotationEdit(ctx){
+    let today = new Date().toISOString().split('T')[0];
+
     const AChart = ctx.chart;
     const annotationOpts = 
     AChart.options.plugins.annotation.annotations;
+    let annotation;
     for (var val in annotationOpts){
       if (annotationOpts[val]["id"] === ctx.id){
+        annotation = annotationOpts[val];
+          break;
+      }
+    }
+
+    let bDate = new Date(annotation.dates.begin).toISOString().slice(0,10);
+    let eDate = new Date(annotation.dates.end).toISOString().slice(0,10);
+    console.log(bDate);
+    console.log(eDate);
+    const alert = await this.alertController.create({
+      cssClass: 'my-custom-class',
+      header: 'Edit Annotation',
+      inputs: [
+        {
+          name: 'begin',
+          type: 'date',
+          min: '2020-01-01',
+          max: today,
+          label: 'Begin',
+          value: bDate
+        },
+        {
+          name: 'end',
+          type: 'date',
+          min: '2020-01-01',
+          max: today,
+          label: 'End',
+          value: eDate 
+        },
+        {
+          name: 'paragraph',
+          type: 'textarea',
+          label: 'Notes',
+          placeholder: 'notes',
+          value: annotation.label.content
+        },
+      ],
+      buttons: [
+        {
+          text: 'Delete',
+          handler: (inputs) => {
+            savedAnnotations.forEach((item, idx) => {
+              if (item["id"] === annotation["id"]) savedAnnotations.splice(idx, 1);
+              console.log(item);
+            });
+            this.chart.update();
+          }
+        },
+        {
+          text: 'OK',
+          handler: (inputs) => {
+            
+            annotation.label.content = inputs["paragraph"];
+          }
+        }, 
+      ]
+    });
+    await alert.present();
+  }
+
+  /**
+   * toggleLabel finds the correlating annotation to the given element id, and toggles its given label
+   * @param ctx annotation element id
+   * @param event mouse click event 
+   */
+  toggleLabel(ctx, event){
+    // get current chart
+    const AChart = ctx.chart;
+    //get annotation plugin from chart options
+    const annotationOpts = 
+    AChart.options.plugins.annotation.annotations;
+       
+    // cycle through annotations and find the correct annotation for the given id
+    for (var val in annotationOpts){
+      if (annotationOpts[val]["id"] === ctx.id){
+        // set annotation
         let annotation = annotationOpts[val];
+        // toggle label visibility
         annotation.label.enabled = !annotation.label.enabled;
         // matching label visibility to mouse event:
         // let position = {
         //   x: (event.x / ctx.chart.chartArea.width * 500) + '%', 
         //   y: (event.y / ctx.chart.chartArea.height * 100) + '%'
         // };
+        
+        // set position of label
         annotation.label.position = 'start';
-
+        
+        // update chart and break from loop
         AChart.update();
         break;
       }
@@ -1185,6 +1267,7 @@ export class dashboard implements OnInit {
    * Generate chart for two data sets: signed on and created on data
    */
   createChart() {
+    let annotationBuffer = [];
     // check for previously made chart
     if(this.chart != null){
       // handle one day filter disabling
@@ -1197,17 +1280,18 @@ export class dashboard implements OnInit {
       } else {
         odFilter.disabled = false;
         anOption.disabled = false;
+        for (var val in savedAnnotations){
+          let annotation = savedAnnotations[val];
+          let bIndex = labelsG.indexOf(annotation.dates.begin);
+          let eIndex = labelsG.indexOf(annotation.dates.end);
+          annotation.xMin = bIndex-0.5;
+          annotation.xMax = eIndex+0.5;
+
+        }
+        annotationBuffer = savedAnnotations;
       }
 
-      for (var val in savedAnnotations){
-        let annotation = savedAnnotations[val];
-        
-        
-        annotation.xMin = labelsG.indexOf(annotation.dates.begin)-0.5;
-        annotation.xMax = labelsG.indexOf(annotation.dates.end)+0.5;
-        
-        console.log(annotation);
-      }
+      
       htmlChanges();
       this.chart.destroy();
     }
@@ -1228,14 +1312,14 @@ export class dashboard implements OnInit {
           data: chartDisplayDataOne,
           backgroundColor: 'skyblue', 
           borderColor: 'skyblue',
-          borderWidth: 1
+          borderWidth: 3,
         },
         {
           label: 'Signed',
           data: chartDisplayDataTwo,
           backgroundColor: 'palegoldenrod', 
           borderColor: 'palegoldenrod',
-          borderWidth: 1
+          borderWidth: 3,
         } 
       ]
       },
@@ -1262,7 +1346,7 @@ export class dashboard implements OnInit {
             }
           },
           annotation: {
-            annotations: savedAnnotations
+            annotations: annotationBuffer
           },
 
           legend: {
