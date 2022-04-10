@@ -1067,6 +1067,31 @@ export class dashboard implements OnInit {
   
   }
 
+  nearestDateIndex(date){
+    let upDate = new Date(date);
+    let downDate = new Date(date);
+    let flag = -1;
+    let udf = true;
+    for (let i = 1; i <= 4; i++){
+      upDate.setDate(upDate.getDate() + i);
+      downDate.setDate(downDate.getDate() - i);
+      let upVal = labelsG.indexOf(upDate.toDateString());
+      let downVal = labelsG.indexOf(downDate.toDateString())
+      if (upVal > -1){
+        flag = upVal;
+        break;
+      } else if (downVal > -1){
+        flag = downVal;
+        udf = false;
+        break;
+      }
+    }
+    return {
+      nidx: flag,
+      udv: udf
+    };
+  }
+
   async addAnnotation(){
     let today = new Date().toISOString().split('T')[0];
 
@@ -1113,43 +1138,74 @@ export class dashboard implements OnInit {
             let annoteBegin = labelsG.indexOf(bDate.toDateString());
             let annoteEnd = labelsG.indexOf(eDate.toDateString());
 
-            var eventArea: any = {
-              id: "boxAnnote_" + annoteBegin + "" + annoteEnd,
-              type: 'box',
-              xMax: annoteBegin-0.5,
-              xMin: annoteEnd+0.5,
-              backgroundColor: 'rgba(255,99,132,0.05)',
-              borderWidth: 2,
-              label: {
-                enabled: false,
-                borderWidth: 0,
-                drawTime: 'afterDatasetsDraw',
-                color: 'black',
-                content: (ctx) => [inputs["paragraph"]],
-                textAlign: 'center'
-              },
-              click: (ctx, event) => {
-                if (event.native.ctrlKey){
-                  this.annotationEdit(ctx);
-                }
-              },
-              enter: (ctx, event) => {
-                // anev.element.options.backgroundColor = 'rgba(255,99,132,0.1)';
-                this.toggleLabel(ctx,event);
-              },
-              leave: (ctx, event) => {
-                // ctx.element.options.backgroundColor = 'rgba(255,99,132,0.05)';
-                this.toggleLabel(ctx, event);
-              },
-              dates: {
-                begin: bDate.toDateString(),
-                end: eDate.toDateString()
+            let makeAnnote = true;
+            if (annoteBegin < 0) {
+              let results = this.nearestDateIndex(bDate);
+              let nidx = results.nidx;
+              let udv = results.udv;
+              if (nidx < 0){
+                makeAnnote = false;
               }
-            };
+              if (udv){
+                annoteBegin = nidx;
+              } else {
+                annoteBegin = nidx + 1;
+              }            }
+            if (annoteEnd < 0){
+              let results = this.nearestDateIndex(bDate);
+              let nidx = results.nidx;
+              let udv = results.udv;
+              if (nidx < 0){
+                makeAnnote = false;
+              }
+              if (udv){
+                annoteEnd = nidx - 1;
+              } else {
+                annoteEnd = nidx + 1;
+              }
+            }
 
-            savedAnnotations.push(eventArea);
 
-            this.chart.update();
+            if (makeAnnote) {
+              var eventArea: any = {
+                id: bDate.toDateString() + "-" + eDate.toDateString(),
+                type: 'box',
+                xMax: annoteBegin-0.5,
+                xMin: annoteEnd+0.5,
+                backgroundColor: 'rgba(255,99,132,0.05)',
+                borderWidth: 1,
+                label: {
+                  enabled: false,
+                  borderWidth: 0,
+                  drawTime: 'afterDatasetsDraw',
+                  color: 'black',
+                  content: (ctx) => [inputs["paragraph"]],
+                  textAlign: 'center'
+                },
+                click: (ctx, event) => {
+                  if (event.native.ctrlKey){
+                    this.annotationEdit(ctx);
+                  }
+                },
+                enter: (ctx, event) => {
+                  // anev.element.options.backgroundColor = 'rgba(255,99,132,0.1)';
+                  this.toggleLabel(ctx,event);
+                },
+                leave: (ctx, event) => {
+                  // ctx.element.options.backgroundColor = 'rgba(255,99,132,0.05)';
+                  this.toggleLabel(ctx, event);
+                },
+                dates: {
+                  begin: bDate.toDateString(),
+                  end: eDate.toDateString()
+                }
+              };
+  
+              savedAnnotations.push(eventArea);
+  
+              this.chart.update();
+            }
+
 
           }
         }, 
@@ -1284,6 +1340,31 @@ export class dashboard implements OnInit {
           let annotation = savedAnnotations[val];
           let bIndex = labelsG.indexOf(annotation.dates.begin);
           let eIndex = labelsG.indexOf(annotation.dates.end);
+
+          if (bIndex < 0) {
+            let results = this.nearestDateIndex(new Date(annotation.dates.begin));
+            let nidx = results.nidx;
+            let udv = results.udv;
+            if (udv){
+              bIndex = nidx;
+            } else {
+              bIndex = nidx + 1;
+            }            }
+          if (eIndex < 0){
+            let results = this.nearestDateIndex(new Date(annotation.dates.end));
+            let nidx = results.nidx;
+            let udv = results.udv;
+            if (udv){
+              eIndex = nidx - 1;
+            } else {
+              eIndex = nidx;
+            }
+          }
+
+
+
+
+
           annotation.xMin = bIndex-0.5;
           annotation.xMax = eIndex+0.5;
 
