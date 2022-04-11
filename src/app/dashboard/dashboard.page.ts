@@ -6,8 +6,6 @@ import * as FileSaver from 'file-saver';
 import zoomPlugin from 'chartjs-plugin-zoom';
 import annotationPlugin from 'chartjs-plugin-annotation';
 import data from 'src/assets/data/test-data.json';
-import { bindCallback } from 'rxjs';
-import { proxyInputs } from '@ionic/angular/directives/proxies-utils';
 
 
 const XLSX = require('exceljs');
@@ -16,10 +14,6 @@ Chart.register(annotationPlugin);
 Chart.register(...registerables)
 
 
-//TODO: time range comments
-//TODO: CSS updates
-//TODO: trends
-//TODO: class splitting and optimization
 
 const daysLong = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 var createdOnData: any = {};
@@ -39,7 +33,9 @@ var packageFilters = {"box": true, "flat": true, "shelf": true, "tube": true};
 var courierFilters = {"amazon": true, "ups": true, "fedex": true, "usps": true, "lasership": true, "other": true};
 var recipientFilters = {"student": true, "faculty": true, "box-range": true};
 
-
+/**
+ * sort and filter data
+ */
 function sortStudData() {
   enteredVolume = 0;
   signedVolume = 0;
@@ -146,6 +142,9 @@ function sortStudData() {
   }
 }
 
+/**
+ * clear x and y axis arrays
+ */
 function clearChartXY(){
   labelsG = [];
   chartDisplayDataOne = [];
@@ -153,6 +152,9 @@ function clearChartXY(){
 }
 
 
+/**
+ * display most recent day data
+ */
 function defaultChartDisplay(){
   let dayHours = {"created": {}, "signed": {}};
   chartDisplayDataOne = []
@@ -200,7 +202,10 @@ function defaultChartDisplay(){
 
 }
 
-
+/**
+ * dynamically change HLA data as chart is zoomed in or out
+ * @param chart the current chart being used
+ */
 let timer;
 function startFetch({chart}) {
   const {min, max} = chart.scales.x;
@@ -210,8 +215,15 @@ function startFetch({chart}) {
   }, 80);
 }
 
+/**
+ * finds high, low, and average of a given data set
+ * @param data data being cycled through
+ * @param begin begin endpoint
+ * @param end end endpoint
+ * @returns high, low, and average of the given data
+ */
 function volumeData(data, begin, end){
-
+  // simple max/min algorithm
   var max = data[begin];
   var min = data[begin];
   var avg;
@@ -231,6 +243,7 @@ function volumeData(data, begin, end){
     }
   }
 
+  // would rather not break math here
   if (end-begin == 0){
     avg = max;
   } else {
@@ -239,10 +252,12 @@ function volumeData(data, begin, end){
 
   return [max, min, avg];
 }
+
   /**
    * dynamically visualize html changes
    */
   function htmlChanges(endpoints = false, b = 0, e = 0) {
+    // handle endpoint entry for different time-displays 
     let begin = 0;
     let end = chartDisplayDataOne.length-1;
     if (endpoints){
@@ -250,10 +265,11 @@ function volumeData(data, begin, end){
       end = e;
     }
     
-
+    // get HLA values
     let [cmax, cmin, cavg] = volumeData(chartDisplayDataOne, begin, end);
     let [smax, smin, savg] = volumeData(chartDisplayDataTwo, begin, end);
     
+    // set html elements to proper HLA values
     document.getElementById("chigh").innerText = cmax.toString();
     document.getElementById("clow").innerText = cmin.toString();
     document.getElementById("caverage").innerText = cavg.toString();
@@ -307,6 +323,7 @@ export class dashboard implements OnInit {
     this.menu.open('custom');
   }
 
+  // object containing all excel column meta-data
   excelColumns = {
     id: { title: "ID", lookup: "ID_Num", value: true },
     name: { title: "Name", lookup: "Name", value: true },
@@ -321,6 +338,12 @@ export class dashboard implements OnInit {
   };
 
 
+  /**
+   * makes an ion-alert option (specifically a checkbox)
+   * @param val object containing checkbox data for ion-alert display
+   * @param valHold the given array holding the value object
+   * @returns the option produced
+   */
   filterOption(val, valHold){
     let option = {
       name: val,
@@ -335,8 +358,13 @@ export class dashboard implements OnInit {
     return option;
   }
 
+  /**
+   * display column filter options for excel data
+   */
   async excelDataFilter(){
     let inputArray = []
+
+    // add options for every value in excelColumns
     for (const val in this.excelColumns){
       inputArray.push(this.filterOption(val,this.excelColumns));
     }
@@ -347,14 +375,11 @@ export class dashboard implements OnInit {
       inputs: inputArray,
       buttons: [
         {
-          text: 'Filtered',
-          cssClass: 'filter-button',
-          handler: () => {
-            //TODO separate filtered data
-          }
+          text: 'Cancel',
+          cssClass: 'filter-button'
         },
         {
-          text: 'All',
+          text: 'Ok',
           cssClass: 'filter-button',
           handler: () => {
             this.excelExport();
@@ -368,7 +393,9 @@ export class dashboard implements OnInit {
   }
 
   /**
-   * give options for exporting excel data
+   * display options for exporting excel data and export to xlsx file with two worksheets:
+   * 1. all data with filtered columns
+   * 2. filtered data with filtered columns
    */
   async excelExport(){
     const workbook = new XLSX.Workbook();
@@ -376,6 +403,7 @@ export class dashboard implements OnInit {
     const filteredData = workbook.addWorksheet('Filtered Data');
 
     let inputList = []
+    // gets excel column filters
     for (var val in this.excelColumns){
       if (this.excelColumns[val].value){
         // get index of val in excelColumns
@@ -387,9 +415,11 @@ export class dashboard implements OnInit {
     allData.columns = inputList;
     filteredData.columns = inputList;
 
+    // add all data to excel worksheet
     for (var val in data){
       let element = data[val];
       let row = {};
+      // add filtered columns
       for (var key in this.excelColumns){
         if (this.excelColumns[key].value){
           let value = element[this.excelColumns[key].lookup];
@@ -402,11 +432,16 @@ export class dashboard implements OnInit {
       }
       allData.addRow(row);
     }
+
+    // add filtered data to separate excel sheet
+    // get  filtered data from created on data
     let fData = [].concat.apply([], Object.values(createdOnData));
 
+    // add rows from filtered data (time-display and filters, but not zoom display)
     for (var val in fData){
       let element = fData[val];
       let row = {};
+      // add filtered columns to empty row
       for (var key in this.excelColumns){
         if (this.excelColumns[key].value){
           let value = element[this.excelColumns[key].lookup];
@@ -734,18 +769,18 @@ export class dashboard implements OnInit {
           checked: recipientFilters["faculty"]
         },
 
-        //TODO: get working box range
-        {
-          cssClass: 'box-range',
-          name: 'box-range',
-          type: 'checkbox',
-          label: 'Box Range',
-          value: 'box-range',
-          handler: () => {
-            recipientFilters["box-range"] = !recipientFilters["box-range"];
-          },
-          checked: recipientFilters["box-range"]
-        }
+        // //TODO: get working box range
+        // {
+        //   cssClass: 'box-range',
+        //   name: 'box-range',
+        //   type: 'checkbox',
+        //   label: 'Box Range',
+        //   value: 'box-range',
+        //   handler: () => {
+        //     recipientFilters["box-range"] = !recipientFilters["box-range"];
+        //   },
+        //   checked: recipientFilters["box-range"]
+        // }
       ],
       buttons: [
         {
@@ -792,6 +827,10 @@ export class dashboard implements OnInit {
   }
 
   
+  /**
+   * display chart type options
+   * @param event popover event object
+   */
   showTypeOptions(event){
     this.chartChange.open(event);
   }
@@ -1002,24 +1041,28 @@ export class dashboard implements OnInit {
         // update currDate
         currDate.setDate(currDate.getDate() + 1);
       }
+      // handle one day occurrences for custom dates
     } else if (currDate.toISOString() == endDate.toISOString()){
+      // set (non-existent) custom date to nothing to handle errors
       if (!(currDateStr in createdOnData)){
         createdOnData[currDateStr] = [];
         signedOnData[currDateStr] = [];
       }
 
+      // store last created/signed dates in temp vars
       let tmpc = createdOnData[CDLS[CDLS.length-1]];
       let tmps = signedOnData[SDLS[SDLS.length-1]];
+      // replace with given one day dates
       createdOnData[CDLS[CDLS.length-1]] = createdOnData[currDateStr];
       signedOnData[CDLS[CDLS.length-1]] = signedOnData[currDateStr];
 
+      // call one day to handle latest dates
       this.oneDay();
 
+      // restore original last dates
       createdOnData[CDLS[CDLS.length-1]] = tmpc;
       signedOnData[SDLS[SDLS.length-1]] = tmps;
 
-    } else {
-      console.log("handle error message");
     }
     
     // visualize chart
@@ -1066,6 +1109,7 @@ export class dashboard implements OnInit {
           text: 'Ok',
           // set current begin and end date values and call to display data
           handler: (inputs) => {
+            // grab custom dates from input and update display
             this.beginCDate = inputs["begin"];
             this.endCDate = inputs["end"];    
             this.applyCustomDates();
@@ -1078,31 +1122,9 @@ export class dashboard implements OnInit {
   
   }
 
-  nearestDateIndex(date){
-    let upDate = new Date(date);
-    let downDate = new Date(date);
-    let flag = -1;
-    let udf = true;
-    for (let i = 1; i <= 4; i++){
-      upDate.setDate(upDate.getDate() + i);
-      downDate.setDate(downDate.getDate() - i);
-      let upVal = labelsG.indexOf(upDate.toDateString());
-      let downVal = labelsG.indexOf(downDate.toDateString())
-      if (upVal > -1){
-        flag = upVal;
-        break;
-      } else if (downVal > -1){
-        flag = downVal;
-        udf = false;
-        break;
-      }
-    }
-    return {
-      nidx: flag,
-      udv: udf
-    };
-  }
-
+  /**
+   * display ion-alert for adding an annotation and pass the data to the necessary methods.
+   */
   async addAnnotation(){
     let today = new Date().toISOString().split('T')[0];
 
@@ -1142,82 +1164,12 @@ export class dashboard implements OnInit {
           text: 'Ok',
           // set current begin and end date values and call to display data
           handler: (inputs) => {
-            let bDate = new Date(inputs["begin"]);
-            bDate.setDate(bDate.getDate() + 1);
-            let eDate = new Date(inputs["end"]);
-            eDate.setDate(eDate.getDate() + 1);
-            let annoteBegin = labelsG.indexOf(bDate.toDateString());
-            let annoteEnd = labelsG.indexOf(eDate.toDateString());
-
-            let makeAnnote = true;
-            if (annoteBegin < 0) {
-              let results = this.nearestDateIndex(bDate);
-              let nidx = results.nidx;
-              let udv = results.udv;
-              if (nidx < 0){
-                makeAnnote = false;
-              }
-              if (udv){
-                annoteBegin = nidx;
-              } else {
-                annoteBegin = nidx + 1;
-              }            }
-            if (annoteEnd < 0){
-              let results = this.nearestDateIndex(bDate);
-              let nidx = results.nidx;
-              let udv = results.udv;
-              if (nidx < 0){
-                makeAnnote = false;
-              }
-              if (udv){
-                annoteEnd = nidx - 1;
-              } else {
-                annoteEnd = nidx + 1;
-              }
-            }
-
-
-            if (makeAnnote) {
-              var eventArea: any = {
-                id: bDate.toDateString() + "-" + eDate.toDateString(),
-                type: 'box',
-                xMax: annoteBegin-0.5,
-                xMin: annoteEnd+0.5,
-                backgroundColor: 'rgba(255,99,132,0.05)',
-                borderWidth: 1,
-                label: {
-                  enabled: false,
-                  borderWidth: 0,
-                  drawTime: 'afterDatasetsDraw',
-                  color: 'black',
-                  content: (ctx) => [inputs["paragraph"]],
-                  textAlign: 'center'
-                },
-                click: (ctx, event) => {
-                  if (event.native.ctrlKey){
-                    this.annotationEdit(ctx);
-                  }
-                },
-                enter: (ctx, event) => {
-                  // anev.element.options.backgroundColor = 'rgba(255,99,132,0.1)';
-                  this.toggleLabel(ctx,event);
-                },
-                leave: (ctx, event) => {
-                  // ctx.element.options.backgroundColor = 'rgba(255,99,132,0.05)';
-                  this.toggleLabel(ctx, event);
-                },
-                dates: {
-                  begin: bDate.toDateString(),
-                  end: eDate.toDateString()
-                }
-              };
-  
-              savedAnnotations.push(eventArea);
-  
+            // check if annotation was made, if true, add to savedAnnotations and update chart display
+            let aneva = this.setAnnotation(inputs);
+            if (aneva.created){
+              savedAnnotations.push(aneva.eva);
               this.chart.update();
             }
-
-
           }
         }, 
       ]
@@ -1225,12 +1177,151 @@ export class dashboard implements OnInit {
     await alert.present();
   }
 
+  /**
+   * Makes an annotation using the given ion-alert data (includes dates and label message data)
+   * @param inputs provided inputs include dates and any label message
+   * @returns an object with either both an annotation and a boolean value to determine if the annotation was made,
+   * or solely a boolean value to notify the calling method that the annotation was never made due to boundary errors
+   */
+  setAnnotation(inputs){
+    // map dates to index values on display
+    let bDate = new Date(inputs["begin"]);
+    bDate.setDate(bDate.getDate() + 1);
+    let eDate = new Date(inputs["end"]);
+    eDate.setDate(eDate.getDate() + 1);
+    let annoteBegin = labelsG.indexOf(bDate.toDateString());
+    let annoteEnd = labelsG.indexOf(eDate.toDateString());
+
+
+    // find the boundaries of an annotation and determine whether they are bad or not
+    let makeAnnote = true;
+    if (annoteBegin < 0) {
+      let results = this.nearestDateIndex(bDate);
+      let nidx = results.nidx;
+      let udv = results.udv;
+      if (nidx < 0){
+        makeAnnote = false;
+      }
+      if (udv){
+        annoteBegin = nidx;
+      } else {
+        annoteBegin = nidx + 1;
+      }            }
+    if (annoteEnd < 0){
+      let results = this.nearestDateIndex(bDate);
+      let nidx = results.nidx;
+      let udv = results.udv;
+      if (nidx < 0){
+        makeAnnote = false;
+      }
+      if (udv){
+        annoteEnd = nidx - 1;
+      } else {
+        annoteEnd = nidx;
+      }
+    }
+    
+    // check to see if making an annotation is viable using the given boundaries
+    if (makeAnnote) {
+      var eventArea: any = {
+        id: bDate.toDateString() + "-" + eDate.toDateString(),
+        type: 'box',
+
+        // scale annotation to graph
+        xMax: annoteBegin-0.5,
+        xMin: annoteEnd+0.5,
+        backgroundColor: 'rgba(255,99,132,0.05)',
+        borderWidth: 1,
+
+        // annotation label to display given information
+        // TODO: this could later be changed to chartjs label annotation, as that would look much nicer
+        // this would require a lot more code though ;-;
+        label: {
+          enabled: false,
+          borderWidth: 0,
+          drawTime: 'afterDatasetsDraw',
+          color: 'black',
+          content: (ctx) => [inputs["paragraph"]],
+          textAlign: 'center'
+        },
+        click: (ctx, event) => {
+          if (event.native.ctrlKey){
+            this.annotationEdit(ctx);
+          }
+        },
+        enter: (ctx, event) => {
+          // anev.element.options.backgroundColor = 'rgba(255,99,132,0.1)';
+          this.toggleLabel(ctx,event);
+        },
+        leave: (ctx, event) => {
+          // ctx.element.options.backgroundColor = 'rgba(255,99,132,0.05)';
+          this.toggleLabel(ctx, event);
+        },
+        
+        // store dates 
+        dates: {
+          begin: bDate.toDateString(),
+          end: eDate.toDateString()
+        }
+      };
+
+      // return created value if annotation was properly created, along with the annotation
+      return {
+        created: true,
+        eva: eventArea
+      }
+    }
+    return {
+      created: false
+    }
+  }
+
+  /**
+   * Scans display data relative to a given date for the nearest feasible date index for annotation boundaries. This is important for
+   * non-displayed dates that should still be able to be entered (sunday to monday should show just monday)
+   * @param date date to scan display data relative to
+   * @returns an object with the index flag of the nearest viable index and a boolean value determining whether the flag
+   * was found or not. Checking for a given number isn't doable as scaling is different for different time-displays, making the
+   * boolean value necessary
+   */
+  nearestDateIndex(date){
+    let upDate = new Date(date);
+    let downDate = new Date(date);
+    let flag = -1;
+    let udf = true;
+    for (let i = 1; i <= 4; i++){
+      upDate.setDate(upDate.getDate() + i);
+      downDate.setDate(downDate.getDate() - i);
+      let upVal = labelsG.indexOf(upDate.toDateString());
+      let downVal = labelsG.indexOf(downDate.toDateString())
+      if (upVal > -1){
+        flag = upVal;
+        break;
+      } else if (downVal > -1){
+        flag = downVal;
+        udf = false;
+        break;
+      }
+    }
+    return {
+      nidx: flag,
+      udv: udf
+    };
+  }
+
+  /**
+   * edit a selected annotation
+   * @param ctx given context of annotation being edited
+   */
   async annotationEdit(ctx){
     let today = new Date().toISOString().split('T')[0];
 
+    // get chart and annotation options from chart
     const AChart = ctx.chart;
     const annotationOpts = 
     AChart.options.plugins.annotation.annotations;
+
+    // cycle through annotationOpts find annotation using given annotation id
     let annotation;
     for (var val in annotationOpts){
       if (annotationOpts[val]["id"] === ctx.id){
@@ -1239,10 +1330,10 @@ export class dashboard implements OnInit {
       }
     }
 
+    // get annotation begin and end dates in an ion-alert sheet format (year-month-day)
     let bDate = new Date(annotation.dates.begin).toISOString().slice(0,10);
     let eDate = new Date(annotation.dates.end).toISOString().slice(0,10);
-    console.log(bDate);
-    console.log(eDate);
+
     const alert = await this.alertController.create({
       cssClass: 'my-custom-class',
       header: 'Edit Annotation',
@@ -1268,30 +1359,46 @@ export class dashboard implements OnInit {
           type: 'textarea',
           label: 'Notes',
           placeholder: 'notes',
+          // get previous annotation descriptions
           value: annotation.label.content
         },
       ],
       buttons: [
         {
           text: 'Delete',
-          handler: (inputs) => {
-            savedAnnotations.forEach((item, idx) => {
-              if (item["id"] === annotation["id"]) savedAnnotations.splice(idx, 1);
-              console.log(item);
-            });
+          handler: () => {
+            // remove annotation
+            this.deleteAnnotation(annotation);
             this.chart.update();
           }
         },
         {
           text: 'OK',
           handler: (inputs) => {
-            
-            annotation.label.content = inputs["paragraph"];
+            // remove annotation and replace with edited one
+            this.deleteAnnotation(annotation);
+            // make new annotation with edited attributes
+            let aneva = this.setAnnotation(inputs);
+            // check for creation and update
+            if (aneva.created){
+              savedAnnotations.push(aneva.eva);
+              this.chart.update();
+            }
           }
         }, 
       ]
     });
     await alert.present();
+  }
+
+  /**
+   * finds annotation in savedAnnotations by id and removes it
+   * @param annotation annotation to remove
+   */
+  deleteAnnotation(annotation){
+    savedAnnotations.forEach((item, idx) => {
+      if (item["id"] === annotation["id"]) savedAnnotations.splice(idx, 1);
+    });
   }
 
   /**
@@ -1347,11 +1454,15 @@ export class dashboard implements OnInit {
       } else {
         odFilter.disabled = false;
         anOption.disabled = false;
+
+        // handle scaling changes for annotations
         for (var val in savedAnnotations){
           let annotation = savedAnnotations[val];
+          // get begin/end indexes of annotation to scale to current time-display
           let bIndex = labelsG.indexOf(annotation.dates.begin);
           let eIndex = labelsG.indexOf(annotation.dates.end);
 
+          // handle cases where user inputs dates between displayed dates 
           if (bIndex < 0) {
             let results = this.nearestDateIndex(new Date(annotation.dates.begin));
             let nidx = results.nidx;
@@ -1360,7 +1471,8 @@ export class dashboard implements OnInit {
               bIndex = nidx;
             } else {
               bIndex = nidx + 1;
-            }            }
+            }            
+          }
           if (eIndex < 0){
             let results = this.nearestDateIndex(new Date(annotation.dates.end));
             let nidx = results.nidx;
@@ -1371,19 +1483,12 @@ export class dashboard implements OnInit {
               eIndex = nidx;
             }
           }
-
-
-
-
-
           annotation.xMin = bIndex-0.5;
           annotation.xMax = eIndex+0.5;
-
         }
+
         annotationBuffer = savedAnnotations;
       }
-
-      
       htmlChanges();
       this.chart.destroy();
     }
@@ -1391,7 +1496,6 @@ export class dashboard implements OnInit {
 
     this.chart = new Chart(this.barChart.nativeElement, {
       // variable chart types: bar, line, and scatter
-      // TODO: get scatter chart working
       type: this.chartType,
 
         data: {
@@ -1418,7 +1522,6 @@ export class dashboard implements OnInit {
       options: {
         plugins: {
           // zoom plugin for wheel and drag
-          // TODO: possibly get pan working
           zoom: {
             limits: {
               x: {
@@ -1434,6 +1537,7 @@ export class dashboard implements OnInit {
                 enabled: true
               },
               mode: 'x',
+              // dynamically change high, low, and average display for created/signed data
               onZoomComplete: startFetch
             }
           },
