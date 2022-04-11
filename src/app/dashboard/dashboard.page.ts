@@ -210,6 +210,35 @@ function startFetch({chart}) {
   }, 80);
 }
 
+function volumeData(data, begin, end){
+
+  var max = data[begin];
+  var min = data[begin];
+  var avg;
+  var mxDate = labelsG[begin];
+  var mnDate = labelsG[begin];
+  var total = 0;
+
+  for (let i = begin; i <= end; i++){
+    let value = data[i];
+    total += value;
+    if (value > max){
+      max = value;
+      mxDate = labelsG[i];
+    } else if (value < min) {
+      min = value;
+      mnDate = labelsG[i];
+    }
+  }
+
+  if (end-begin == 0){
+    avg = max;
+  } else {
+    avg = Math.round(total/(end-begin));
+  }
+
+  return [max, min, avg];
+}
   /**
    * dynamically visualize html changes
    */
@@ -220,35 +249,17 @@ function startFetch({chart}) {
       begin = b;
       end = e;
     }
-    var max = chartDisplayDataOne[begin];
-    var min = chartDisplayDataOne[begin];
-    var avg;
-    var mxDate = labelsG[begin];
-    var mnDate = labelsG[begin];
-    var total = 0;
+    
 
-    for (let i = begin; i <= end; i++){
-      let value = chartDisplayDataOne[i];
-      total += value;
-      if (value > max){
-        max = value;
-        mxDate = labelsG[i];
-      } else if (value < min) {
-        min = value;
-        mnDate = labelsG[i];
-      }
-    }
-
-
-    if (end-begin == 0){
-      avg = max;
-    } else {
-      avg = Math.round(total/(end-begin));
-    }
-    document.getElementById("high").innerText = max.toString();
-    document.getElementById("low").innerText = min.toString();
-    document.getElementById("average").innerText = avg.toString();
-
+    let [cmax, cmin, cavg] = volumeData(chartDisplayDataOne, begin, end);
+    let [smax, smin, savg] = volumeData(chartDisplayDataTwo, begin, end);
+    
+    document.getElementById("chigh").innerText = cmax.toString();
+    document.getElementById("clow").innerText = cmin.toString();
+    document.getElementById("caverage").innerText = cavg.toString();
+    document.getElementById("shigh").innerText = smax.toString();
+    document.getElementById("slow").innerText = smin.toString();
+    document.getElementById("saverage").innerText = savg.toString();
   }
 
   

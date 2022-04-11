@@ -11,27 +11,62 @@
 
             <ion-card-content>
               <div class="volume-container">
-                <div class="raw-div1">
-                  <h2>
-                    High
-                  </h2>  
-                  <h1 id="high"></h1>
+                <div class="volume-sub-container">
+                  <h4>
+                    Entered
+                  </h4>
+                  <div class="raw-div1">
+                    <h3>
+                      High
+                    </h3>  
+                    <h1 id="chigh"></h1>
+                  </div>
+
+                  <div class="raw-div2">
+                    <h3>
+                      Low
+                    </h3>
+                    <h1 id="clow"></h1>
+                  </div>
+                  
+                  <div class="raw-div3">
+                    <h3>
+                      Average
+                    </h3>
+                    <h1 id="caverage"></h1>
+                  </div>
+                  
                 </div>
 
-                <div class="raw-div2">
-                  <h2>
-                    Low
-                  </h2>
-                  <h1 id="low"></h1>
+
+                <div class="volume-sub-container">
+                  <h4>
+                    Signed
+                  </h4>
+                  <div class="raw-div1">
+                    <h3>
+                      High
+                    </h3>  
+                    <h1 id="shigh"></h1>
+                  </div>
+
+                  <div class="raw-div2">
+                    <h3>
+                      Low
+                    </h3>
+                    <h1 id="slow"></h1>
+                  </div>
+                  
+                  <div class="raw-div3">
+                    <h3>
+                      Average
+                    </h3>
+                    <h1 id="saverage"></h1>
+                  </div>
+                  
                 </div>
-                
-                <div class="raw-div3">
-                  <h2>
-                    Average
-                  </h2>
-                  <h1 id="average"></h1>
-                </div>
-                
+
+
               </div>
             </ion-card-content>
           </ion-card>
@@ -97,7 +132,7 @@
               <div class="chart-option-wrapper">
 
                 <div>
-                  <ion-button class="chart-option" (click)="showTypeOptions()">Chart Type</ion-button>
+                  <ion-button class="chart-option" (click)="showTypeOptions($event)">Chart Type</ion-button>
                 </div>
 
                 <div>
