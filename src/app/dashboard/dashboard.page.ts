@@ -1206,7 +1206,8 @@ export class dashboard implements OnInit {
         annoteBegin = nidx;
       } else {
         annoteBegin = nidx + 1;
-      }            }
+      }            
+    }
     if (annoteEnd < 0){
       let results = this.nearestDateIndex(bDate);
       let nidx = results.nidx;
