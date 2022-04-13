@@ -1,79 +1,286 @@
 import { Component, ViewChild, OnInit } from '@angular/core';
-import { Chart, DatasetController, registerables } from 'chart.js';
-import { MenuController } from '@ionic/angular';
+import { Chart, registerables } from 'chart.js';
+import { MenuController, AlertController, IonSelect } from '@ionic/angular';
 
+import * as FileSaver from 'file-saver';
+import zoomPlugin from 'chartjs-plugin-zoom';
+import annotationPlugin from 'chartjs-plugin-annotation';
 import data from 'src/assets/data/test-data.json';
 
 
+const XLSX = require('exceljs');
+Chart.register(zoomPlugin);
+Chart.register(annotationPlugin);
+Chart.register(...registerables)
+
+
+
+const daysLong = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 var createdOnData: any = {};
 var signedOnData: any = {};
 var chartDisplayDataOne = [];
+var chartDisplayDataTwo = [];
+var CDLS = []
+var SDLS = []
+var savedAnnotations = []
+var enteredVolume = 0;
+var signedVolume = 0;
+
 var labelsG = [];
-var enteredValue = 0;
-var signedValue = 0;
+// filter dictionaries
+var dayFilters = {"monday": true, "tuesday": true, "wednesday": true, "thursday": true, "friday": true, "saturday": true};
+var packageFilters = {"box": true, "flat": true, "shelf": true, "tube": true};
+var courierFilters = {"amazon": true, "ups": true, "fedex": true, "usps": true, "lasership": true, "other": true};
+var recipientFilters = {"student": true, "faculty": true, "box-range": true};
+
+/**
+ * sort and filter data
+ */
 function sortStudData() {
+  enteredVolume = 0;
+  signedVolume = 0;
+  createdOnData = {};
+  signedOnData = {};
+  chartDisplayDataOne = [];
+  chartDisplayDataTwo = [];
+  CDLS = [];
+  SDLS = [];
+
   for(const inEl of data){
-    enteredValue++;
+    // volume data
+    enteredVolume += 1;
+    
     let cDate: string = new Date(inEl["CreatedOn"]).toDateString();
     let sDate: string = new Date(inEl["SignedOn"]).toDateString();
-    // adding created on data
-    if (cDate in createdOnData){
-      createdOnData[cDate].push(inEl);
-    } else {
-      createdOnData[cDate] = [inEl];
-    }
-    
-    // adding signed on data
-    if (sDate != "NA"){
-      signedValue++;
-      if (sDate in signedOnData){
-        signedOnData[sDate].push(inEl);
+    let day = daysLong[new Date(inEl["CreatedOn"]).getDay()];
+
+    let pckg = "box";
+    if (inEl["ContainerType"] !== "NA"){
+      if (inEl["ContainerType"] === "Tube"){
+        pckg = "tube"
       } else {
-        signedOnData[sDate] = [inEl];
+        pckg = "flat";
       }
+    } else if (inEl["Shelf"] != null){
+      pckg = "shelf"
+    } 
+
+    let courier = "other";
+    let barcode = inEl["Barcode"];
+
+    if (barcode != null){
+      // check tracking numbers via regex testing
+      //ups
+      if (/\b(1Z ?[0-9A-Z]{3} ?[0-9A-Z]{3} ?[0-9A-Z]{2} ?[0-9A-Z]{4} ?[0-9A-Z]{3} ?[0-9A-Z]|[\dT]\d\d\d ?\d\d\d\d ?\d\d\d)\b/.test(barcode)){
+        courier = "ups";
+        //fedex
+      } else if (/(\b96\d{20}\b)|(\b\d{15}\b)|(\b\d{12}\b)/.test(barcode) ||
+      /\b((98\d\d\d\d\d?\d\d\d\d|98\d\d) ?\d\d\d\d ?\d\d\d\d( ?\d\d\d)?)\b/.test(barcode) ||
+      /^[0-9]{15}$/.test(barcode)){
+        courier = "fedex";
+        //usps
+      } else if (/(\b\d{30}\b)|(\b91\d+\b)|(\b\d{20}\b)/.test(barcode) ||
+      /^E\D{1}\d{9}\D{2}$|^9\d{15,21}$/.test(barcode) ||
+      /^91[0-9]+$/.test(barcode) ||
+      /^[A-Za-z]{2}[0-9]+US$/.test(barcode)) {
+        courier = "usps";
+        //amazon
+      } else if (barcode.substring(0,3) === "TBA" || barcode.substring(0,3) === "tba"){
+        courier = "amazon";
+        //lasership
+      } else if ((/[a-zA-Z]{2}\d{8}/.test(barcode)
+      || /\d{1}[a-zA-Z]{2}\d{17}/.test(barcode)) && barcode !== "amazon"){
+        courier = "lasership";
+      } 
+
+    }
+
+    let recipient = "student"
+    if (inEl["Package"] === "FAC" || inEl["Package"] === "fac"){
+      recipient = "faculty";
+    }
+
+    let filterFlag = true;
+
+    if (!dayFilters[day]){
+      filterFlag = false;
+    }
+    if (!packageFilters[pckg]){
+      filterFlag = false;
+    }
+    if (!courierFilters[courier]){
+      filterFlag = false;
+    }
+    if (!recipientFilters[recipient]){
+      filterFlag = false;
+    }
+
+
+    
+    if (filterFlag){
+      // push created on data
+      if (cDate in createdOnData){
+        createdOnData[cDate].push(inEl);
+      } else {
+        CDLS.push(cDate);
+        createdOnData[cDate] = [inEl];
+      }
+
+      // push signed on data
+      if (inEl["SignedOn"] != null){
+        signedVolume += 1;
+
+        if (sDate in signedOnData){
+          signedOnData[sDate].push(inEl);
+        } else {
+          SDLS.push(sDate);
+          signedOnData[sDate] = [inEl];
+        }
+      }
+
     }
   }
 }
 
+/**
+ * clear x and y axis arrays
+ */
 function clearChartXY(){
   labelsG = [];
   chartDisplayDataOne = [];
+  chartDisplayDataTwo = [];
 }
 
 
+/**
+ * display most recent day data
+ */
 function defaultChartDisplay(){
-  let dayHours = {};
-    chartDisplayDataOne = [];
-    labelsG = ["6am", "7am", "8am", "9am", "10am", "11am", "12pm", "1pm", "2pm", "3pm", "4pm", "5pm", "6pm"];
+  let dayHours = {"created": {}, "signed": {}};
+  chartDisplayDataOne = []
+  chartDisplayDataTwo = []
+  labelsG = ["6am", "7am", "8am", "9am", "10am", "11am", "12pm", "1pm", "2pm", "3pm", "4pm", "5pm", "6pm"];
 
-    // get latest day
-    let tmpKDates = Object.keys(createdOnData);
-    let tDay = createdOnData[tmpKDates[tmpKDates.length-1]];
-    // extract data from 
-    for (const val in tDay){
-      let time = new Date(tDay[val]["CreatedOn"]).getHours();
-      if (time in dayHours){
-        dayHours[time].push(tDay[val]);
-      } else {
-        dayHours[time] = [tDay[val]];
-      }
+  
+  // get latest day
+  let tcDay = createdOnData[CDLS[CDLS.length-1]];
+  let tsDay = signedOnData[SDLS[SDLS.length-1]];
+  // extract data from 
+  for (const val in tcDay){
+    let time = new Date(tcDay[val]["CreatedOn"]).getHours();
+    if (time in dayHours["created"]){
+      dayHours["created"][time].push(tcDay[val]);
+    } else {
+      dayHours["created"][time] = [tcDay[val]];
     }
-    // change display data
-    for (const val in labelsG){
-      let time = (Number(val.substring(0,2))+6);
-      if (time in dayHours){
-        chartDisplayDataOne.push(dayHours[time].length)
-      } else {
-        chartDisplayDataOne.push(0);
-      }
+  }
+  for(const val in tsDay){
+    let time = new Date(tsDay[val]["SignedOn"]).getHours();
+    if (time in dayHours["signed"]){
+      dayHours["signed"][time].push(tsDay[val]);
+    } else {
+      dayHours["signed"][time] = [tsDay[val]];
     }
+  }
+ 
+  // change display data
+  for (const val in labelsG){
+    let time = (Number(val.substring(0,2))+6);
+    
+    if (time in dayHours["created"]){
+      chartDisplayDataOne.push(dayHours["created"][time].length);
+    } else {
+      chartDisplayDataOne.push(0);
+    }
+
+    if (time in dayHours["signed"]){
+      chartDisplayDataTwo.push(dayHours["signed"][time].length);
+    } else {
+      chartDisplayDataTwo.push(0);
+    }
+  }
+
 }
 
+/**
+ * dynamically change HLA data as chart is zoomed in or out
+ * @param chart the current chart being used
+ */
+let timer;
+function startFetch({chart}) {
+  const {min, max} = chart.scales.x;
+  clearTimeout(timer);
+  timer = setTimeout(() => {
+    htmlChanges(true, min, max);
+  }, 80);
+}
+
+/**
+ * finds high, low, and average of a given data set
+ * @param data data being cycled through
+ * @param begin begin endpoint
+ * @param end end endpoint
+ * @returns high, low, and average of the given data
+ */
+function volumeData(data, begin, end){
+  // simple max/min algorithm
+  var max = data[begin];
+  var min = data[begin];
+  var avg;
+  var mxDate = labelsG[begin];
+  var mnDate = labelsG[begin];
+  var total = 0;
+
+  for (let i = begin; i <= end; i++){
+    let value = data[i];
+    total += value;
+    if (value > max){
+      max = value;
+      mxDate = labelsG[i];
+    } else if (value < min) {
+      min = value;
+      mnDate = labelsG[i];
+    }
+  }
+
+  // would rather not break math here
+  if (end-begin == 0){
+    avg = max;
+  } else {
+    avg = Math.round(total/(end-begin));
+  }
+
+  return [max, min, avg];
+}
+
+  /**
+   * dynamically visualize html changes
+   */
+  function htmlChanges(endpoints = false, b = 0, e = 0) {
+    // handle endpoint entry for different time-displays 
+    let begin = 0;
+    let end = chartDisplayDataOne.length-1;
+    if (endpoints){
+      begin = b;
+      end = e;
+    }
+    
+    // get HLA values
+    let [cmax, cmin, cavg] = volumeData(chartDisplayDataOne, begin, end);
+    let [smax, smin, savg] = volumeData(chartDisplayDataTwo, begin, end);
+    
+    // set html elements to proper HLA values
+    document.getElementById("chigh").innerText = cmax.toString();
+    document.getElementById("clow").innerText = cmin.toString();
+    document.getElementById("caverage").innerText = cavg.toString();
+    document.getElementById("shigh").innerText = smax.toString();
+    document.getElementById("slow").innerText = smin.toString();
+    document.getElementById("saverage").innerText = savg.toString();
+  }
+
+  
 sortStudData();
 defaultChartDisplay();
-
-Chart.register(...registerables)
-
 
 @Component({
   selector: 'app-dashboard',
@@ -81,130 +288,1270 @@ Chart.register(...registerables)
   styleUrls: ['dashboard.page.scss']
 })
 
+
+
 export class dashboard implements OnInit {
   chartType: any = 'bar';
   @ViewChild('barChart') barChart;
+  @ViewChild('chartChange') chartChange: IonSelect;
+
+  
   chart: any;
   colorArray: any;
-  constructor(private menu: MenuController) { }
- 
+  constructor(private menu: MenuController, public alertController: AlertController) {}
+  currentChartTimeRange: () => void = defaultChartDisplay;
+
   ngOnInit() {
-    document.getElementById("entered").innerText = enteredValue.toString();
-    document.getElementById("signed").innerText = signedValue.toString();
-    document.getElementById("inSystem").innerText = (enteredValue-signedValue).toString();
+    htmlChanges();
   }
+  
+  ionViewDidEnter() {
+    this.createChart();
+  }
+
   openFirst(){
     this.menu.enable(true,'first');
     this.menu.open('first');
   }
+
   openEnd(){
     this.menu.open('end')
   }
+
   openCustom(){
     this.menu.enable(true,'custom');
     this.menu.open('custom');
   }
 
-  showChartData(event){
-    var value = event["detail"]["value"]
-    this.chart.destroy();
-    this.chartType = value;
+  // object containing all excel column meta-data
+  excelColumns = {
+    id: { title: "ID", lookup: "ID_Num", value: true },
+    name: { title: "Name", lookup: "Name", value: true },
+    box: { title: "Box", lookup: "Box", value: true},
+    package: { title: "Package", lookup: "Package", value: true },
+    containerType: { title: "Container Type", lookup: "ContainerType", value: true },
+    shelf: { title: "Shelf", lookup: "Shelf", value: true },
+    barcode: { title: "Barcode", lookup: "Barcode", value: true },
+    signedOn: { title: "Signed On", lookup: "SignedOn", value: true },
+    createdOn: { title: "Created On", lookup: "CreatedOn", value: true },
+    emailSent: { title: "Email Sent", lookup: "EmailSent", value: true }
+  };
+
+
+  /**
+   * makes an ion-alert option (specifically a checkbox)
+   * @param val object containing checkbox data for ion-alert display
+   * @param valHold the given array holding the value object
+   * @returns the option produced
+   */
+  filterOption(val, valHold){
+    let option = {
+      name: val,
+      type: 'checkbox',
+      label: valHold[val].title,
+      value: val,
+      handler: () => {
+        valHold[val].value = !valHold[val].value;
+      },
+      checked: valHold[val].value
+    }
+    return option;
+  }
+
+  /**
+   * display column filter options for excel data
+   */
+  async excelDataFilter(){
+    let inputArray = []
+
+    // add options for every value in excelColumns
+    for (const val in this.excelColumns){
+      inputArray.push(this.filterOption(val,this.excelColumns));
+    }
+
+    const alert = await this.alertController.create({
+      cssClass: 'my-custom-class',
+      header: 'Alert',
+      inputs: inputArray,
+      buttons: [
+        {
+          text: 'Cancel',
+          cssClass: 'filter-button'
+        },
+        {
+          text: 'Ok',
+          cssClass: 'filter-button',
+          handler: () => {
+            this.excelExport();
+          }
+        }, 
+        
+      ]
+    });
+  
+    await alert.present();
+  }
+
+  /**
+   * display options for exporting excel data and export to xlsx file with two worksheets:
+   * 1. all data with filtered columns
+   * 2. filtered data with filtered columns
+   */
+  async excelExport(){
+    const workbook = new XLSX.Workbook();
+    const allData = workbook.addWorksheet('All Data');
+    const filteredData = workbook.addWorksheet('Filtered Data');
+
+    let inputList = []
+    // gets excel column filters
+    for (var val in this.excelColumns){
+      if (this.excelColumns[val].value){
+        // get index of val in excelColumns
+        inputList.push({header: this.excelColumns[val].title, key: val});
+      }
+    }
+
+    // set metadata for worksheets 
+    allData.columns = inputList;
+    filteredData.columns = inputList;
+
+    // add all data to excel worksheet
+    for (var val in data){
+      let element = data[val];
+      let row = {};
+      // add filtered columns
+      for (var key in this.excelColumns){
+        if (this.excelColumns[key].value){
+          let value = element[this.excelColumns[key].lookup];
+          if (value == null){
+            row[key] = "NA";
+          } else {
+            row[key] = value;
+          }
+        }
+      }
+      allData.addRow(row);
+    }
+
+    // add filtered data to separate excel sheet
+    // get  filtered data from created on data
+    let fData = [].concat.apply([], Object.values(createdOnData));
+
+    // add rows from filtered data (time-display and filters, but not zoom display)
+    for (var val in fData){
+      let element = fData[val];
+      let row = {};
+      // add filtered columns to empty row
+      for (var key in this.excelColumns){
+        if (this.excelColumns[key].value){
+          let value = element[this.excelColumns[key].lookup];
+          if (value == null){
+            row[key] = "NA";
+          } else {
+            row[key] = value;
+          }
+        }
+      }
+      filteredData.addRow(row);
+    }
+
+
+
+    const blobType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8';
+    workbook.xlsx.writeBuffer().then(data => {
+      const blob = new Blob([data], {type: blobType});
+      FileSaver.saveAs(blob, 'ExcelExport_' + new Date());
+    })
+  }
+
+  //TODO: optimize this for easier reading and scalability (reference to excel export for examples of how to do so)
+  /**
+   * Alert sheet for day filter options
+   */
+  async dayFilter() {
+    const alert = await this.alertController.create({
+      cssClass: 'my-custom-class',
+      header: 'Day',
+      inputs: [
+        {
+          name: 'monday',
+          type: 'checkbox',
+          label: 'Monday',
+          value: 'monday',
+          handler: () => {
+            dayFilters["monday"] = !dayFilters["monday"];
+          },
+          checked: dayFilters["monday"]
+        },
+
+        {
+          name: 'tuesday',
+          type: 'checkbox',
+          label: 'Tuesday',
+          value: 'tuesday',
+          handler: () => {
+            dayFilters["tuesday"] = !dayFilters["tuesday"];
+          },
+          checked: dayFilters["tuesday"]
+        },
+
+        {
+          name: 'wednesday',
+          type: 'checkbox',
+          label: 'Wednesday',
+          value: 'wednesday',
+          handler: () => {
+            dayFilters["wednesday"] = !dayFilters["wednesday"];
+          },
+          checked: dayFilters["wednesday"]
+        },
+
+        {
+          name: 'thursday',
+          type: 'checkbox',
+          label: 'Thursday',
+          value: 'thursday',
+          handler: () => {
+            dayFilters["thursday"] = !dayFilters["thursday"];
+          },
+          checked: dayFilters["thursday"]
+        },
+
+        {
+          name: 'friday',
+          type: 'checkbox',
+          label: 'Friday',
+          value: 'thursday',
+          handler: () => {
+            dayFilters["friday"] = !dayFilters["friday"];
+          },
+          checked: dayFilters["friday"]
+        },
+
+        {
+          name: 'saturday',
+          type: 'checkbox',
+          label: 'Saturday',
+          value: 'saturday',
+          handler: (blah) => {
+            dayFilters["saturday"] = !dayFilters["saturday"];
+          },
+          checked: dayFilters["saturday"]
+        }
+      ],
+      buttons: [
+        {
+          text: 'Select All',
+          cssClass: 'filter-button',
+          handler: (blah) => {
+            for (let i in dayFilters){
+              dayFilters[i] = true;
+            }
+            this.applyFilterOptions();
+          }
+        },
+        {
+          text: 'Ok',
+          cssClass: 'filter-button',
+          handler: (blah) => {
+            this.applyFilterOptions();
+          }
+        }, 
+        
+      ]
+    });
+    await alert.present();
+  }
+
+  /**
+   * Alert sheet for package filter options
+   */
+  async packageFilter() {
+    const alert = await this.alertController.create({
+      cssClass: 'my-custom-class',
+      header: 'Package',
+      inputs: [
+        {
+          name: 'box',
+          type: 'checkbox',
+          label: 'Box',
+          value: 'box',
+          handler: () => {
+            packageFilters["box"] = !packageFilters["box"];
+          },
+          checked: packageFilters["box"]
+        },
+
+        {
+          name: 'flat',
+          type: 'checkbox',
+          label: 'Flat',
+          value: 'flat',
+          handler: () => {
+            packageFilters["flat"] = !packageFilters["flat"];
+          },
+          checked: packageFilters["flat"]
+        },
+
+        {
+          name: 'shelf',
+          type: 'checkbox',
+          label: 'Shelf',
+          value: 'shelf',
+          handler: () => {
+            packageFilters["shelf"] = !packageFilters["shelf"];
+          },
+          checked: packageFilters["shelf"]
+        },
+
+        {
+          name: 'tube',
+          type: 'checkbox',
+          label: 'Tube',
+          value: 'tube',
+          handler: () => {
+            packageFilters["tube"] = !packageFilters["tube"];
+          },
+          checked: packageFilters["tube"]
+        }
+      ],
+      buttons: [
+        {
+          text: 'Select All',
+          cssClass: 'filter-button',
+          handler: (blah) => {
+            for (let i in packageFilters){
+              packageFilters[i] = true;
+            }
+            this.applyFilterOptions();
+          }
+        },
+        {
+          text: 'Ok',
+          cssClass: 'filter-button',
+          handler: (blah) => {
+            this.applyFilterOptions();
+          }
+        }, 
+        
+      ]
+    });
+
+    await alert.present();
+  }
+
+
+  /**
+   * Alert sheet for courier filter options
+   */
+  async courierFilter() {
+    const alert = await this.alertController.create({
+      cssClass: 'my-custom-class',
+      header: 'Courier',
+      inputs: [
+        {
+          name: 'amazon',
+          type: 'checkbox',
+          label: 'Amazon',
+          value: 'amazon',
+          handler: () => {
+            courierFilters["amazon"] = !courierFilters["amazon"];
+          },
+          checked: courierFilters["amazon"]
+        },
+
+        {
+          name: 'ups',
+          type: 'checkbox',
+          label: 'UPS',
+          value: 'ups',
+          handler: () => {
+            courierFilters["ups"] = !courierFilters["ups"];
+          },
+          checked: courierFilters["ups"]
+        },
+
+        {
+          name: 'usps',
+          type: 'checkbox',
+          label: 'USPS',
+          value: 'usps',
+          handler: () => {
+            courierFilters["usps"] = !courierFilters["usps"];
+          },
+          checked: courierFilters["usps"]
+        },
+        {
+          name: 'fedex',
+          type: 'checkbox',
+          label: 'FedEx',
+          value: 'fedex',
+          handler: () => {
+            courierFilters["fedex"] = !courierFilters["fedex"];
+          },
+          checked: courierFilters["fedex"]
+        },
+
+        {
+          name: 'lasership',
+          type: 'checkbox',
+          label: 'LaserShip',
+          value: 'lasership',
+          handler: () => {
+            courierFilters["lasership"] = !courierFilters["lasership"];
+          },
+          checked: courierFilters["lasership"]
+        },
+        {
+          name: 'other',
+          type: 'checkbox',
+          label: 'Other',
+          value: 'other',
+          handler: () => {
+            courierFilters["other"] = !courierFilters["other"];
+          },
+          checked: courierFilters["other"]
+        }
+      ],
+      buttons: [
+        {
+          text: 'Select All',
+          cssClass: 'filter-button',
+          handler: (blah) => {
+            for (let i in courierFilters){
+              courierFilters[i] = true;
+            }
+            this.applyFilterOptions();
+          }
+        },
+        {
+          text: 'Ok',
+          cssClass: 'filter-button',
+          handler: (blah) => {
+            this.applyFilterOptions();
+          }
+        }, 
+        
+      ]
+    });
+
+    await alert.present();
+  }
+
+  /**
+   * Alert sheet for recipient filter options
+   */
+  async recipientFilter() {
+    const alert = await this.alertController.create({
+      cssClass: 'recipient-filter-group',
+
+      header: 'Recipient',
+      inputs: [
+        {
+          name: 'student',
+          type: 'checkbox',
+          label: 'Student',
+          value: 'student',
+          handler: () => {
+            recipientFilters["student"] = !recipientFilters["student"];
+          },
+          checked: recipientFilters["student"]
+        },
+
+        {
+          name: 'faculty',
+          type: 'checkbox',
+          label: 'Faculty and Staff',
+          value: 'faculty',
+          handler: () => {
+            recipientFilters["faculty"] = !recipientFilters["faculty"];
+          },
+          checked: recipientFilters["faculty"]
+        },
+
+        // //TODO: get working box range
+        // {
+        //   cssClass: 'box-range',
+        //   name: 'box-range',
+        //   type: 'checkbox',
+        //   label: 'Box Range',
+        //   value: 'box-range',
+        //   handler: () => {
+        //     recipientFilters["box-range"] = !recipientFilters["box-range"];
+        //   },
+        //   checked: recipientFilters["box-range"]
+        // }
+      ],
+      buttons: [
+        {
+          text: 'Select All',
+          cssClass: 'filter-button',
+          handler: (blah) => {
+            for (let i in recipientFilters){
+              recipientFilters[i] = true;
+            }
+            this.applyFilterOptions();
+          }
+        },
+        {
+          text: 'Ok',
+          cssClass: 'filter-button',
+          handler: (blah) => {
+            this.applyFilterOptions();
+          }
+        }, 
+      ]
+    });
+    await alert.present();
+  }
+  
+
+  /**
+   * Function that applies currently selected filter options
+   */
+  applyFilterOptions(){
+    sortStudData(); // sorts data according to set filters
+    clearChartXY(); // clears current chart
+    this.currentChartTimeRange(); // calls current time range so chart isn't reset to daily
     this.createChart();
   }
 
-  ionViewDidEnter() {
-    this.createChart();
+  /**
+   * Function that changes chart type.
+   * @param event given html event holding requested chart type
+   */
+  changeChartType(event){
+    this.chartType = event["detail"]["value"];
+    this.chart.type = this.chartType;
+    this.createChart();  
   }
 
-  // Visualizing data for one day
+  
+  /**
+   * display chart type options
+   * @param event popover event object
+   */
+  showTypeOptions(event){
+    this.chartChange.open(event);
+  }
+
+  
+  /**
+   * Function that displays current day's data
+   */
   oneDay(){
+    this.currentChartTimeRange = this.oneDay;
     clearChartXY();
     defaultChartDisplay();
-    this.replaceChart();
+    this.createChart();
   }
 
+
+  /**
+   * Function that displays latest week of data
+   */
   oneWeek() {
-    labelsG = [];
-    chartDisplayDataOne = [];
-    let tmpKDates = Object.keys(createdOnData)
+    this.currentChartTimeRange = this.oneWeek;
+    clearChartXY();
+    // check for past seven daily inputs
     for (let i = 0; i < 7; i++){
-      let date = tmpKDates[tmpKDates.length+i-8];
-      labelsG.push(date);
-      chartDisplayDataOne.push(createdOnData[date].length);
-    }
 
-    this.replaceChart();
+      // get the ith date within the 7 day range and add to x labels
+      let date = CDLS[CDLS.length+i-8];
+      labelsG.push(date);
+
+      // pulling date from CDLS, so the date will always be in createdOnData
+      chartDisplayDataOne.push(createdOnData[date].length);
+    
+      // check if date is in signedOnData as well and add to display 
+      if (date in signedOnData){
+        chartDisplayDataTwo.push(signedOnData[date].length);
+      } else {
+        chartDisplayDataTwo.push(0);
+      }
+    }
+    this.createChart();
   }
 
+
+  /**
+   * Function that displays the current month'ss data
+   */
+  oneMonth(){
+    this.currentChartTimeRange = this.oneMonth;
+    this.nMonths(1);
+  }
+
+
+  /**
+   * Function that displays the past three months of data
+   */
+  threeMonths(){
+    this.currentChartTimeRange = this.threeMonths;
+    this.nMonths(3);
+  }
+
+
+  /**
+   * Function that displays all data within the current year
+   */
   currentYear(){
-    let tmpKDates = Object.keys(createdOnData);
-    let month = new Date(tmpKDates[tmpKDates.length-1]).getMonth();
+    this.currentChartTimeRange = this.currentYear;
+    // get current month
+    let month = new Date(CDLS[CDLS.length-1]).getMonth();
     this.nMonths(month+1);
   }
+
+
+  /**
+   * Function that displays all possible data
+   */
   maxData(){
+    this.currentChartTimeRange = this.maxData;
     clearChartXY();
+
+    // cycle through days where packages were entered, include created and signed on data for those days
     for (const val in createdOnData){
+      // set up x labels
       labelsG.push(val);
+
+      // push created on data
       chartDisplayDataOne.push(createdOnData[val].length);
+      
+      // check to see if any packages have been signed in that day and push to display data accordingly
+      if (val in signedOnData){
+        chartDisplayDataTwo.push(signedOnData[val].length);
+      } else {
+        chartDisplayDataTwo.push(0);
+      }
     }
-    this.replaceChart();
+    this.createChart();
   }
+
+
+  /**
+   * Function that gets the past 12 months of data
+   */
+  yearToDate(){
+    this.currentChartTimeRange = this.yearToDate;
+    this.nMonths(12);
+    this.createChart();
+  }
+
+
+  /**
+   * A function that displays the given number of months.
+   * This is done by indexing at the current month and iterating backwards until n months are parsed.
+   * Reverse indexing allows for easier month parsing and year/month correction for cross-year lookups
+   * @param monthNum number of months to display
+   */
   nMonths(monthNum){
+    // clear any currently displayed data
     clearChartXY();
-    let tmpKDates = Object.keys(createdOnData);
-    let latestDate = new Date(tmpKDates[tmpKDates.length-1]);
+    // get the most recent date
+    let latestDate = new Date(CDLS[CDLS.length-1]);
     let yearCorrection = 0;
     let monthCorrection = 0;
+
+    // cycle through and get the data for each required month
     for (let i = 0; i < monthNum; i++){
-      let date = new Date(latestDate.getFullYear()-yearCorrection, latestDate.getMonth()-monthNum+monthCorrection+i+2, 0);
-      for (const val in tmpKDates){
-        let currDate = new Date(tmpKDates[val]);
-        if (currDate.getMonth() == date.getMonth()){
+      
+      // get current month/year in loop
+      let currMonth = new Date(latestDate.getFullYear()-yearCorrection, latestDate.getMonth()-monthNum+monthCorrection+i+2, 0);
+
+      // cycle through all the created on data
+      for (const val in CDLS){
+        // get current date
+        let currDate = new Date(CDLS[val]);
+
+        // check if current date is in current month
+        if (currDate.getMonth() == currMonth.getMonth()){
+          
+          // push created and signed date to chart display
           labelsG.push(currDate.toDateString());
-          chartDisplayDataOne.push(createdOnData[currDate.toDateString()].length);
+
+          //created
+          if (currDate.toDateString() in createdOnData){
+            chartDisplayDataOne.push(createdOnData[currDate.toDateString()].length); 
+          } else {
+            chartDisplayDataOne.push(0);
+          }
+
+          // signed
+          if (currDate.toDateString() in signedOnData) {
+            chartDisplayDataTwo.push(signedOnData[currDate.toDateString()].length)
+          } else {
+            chartDisplayDataTwo.push(0);
+          }
         }
       }
 
-      if(latestDate.getMonth()-i == 1){
+      // date correction for time ranges going into past years
+      if (latestDate.getMonth()-i == 1){
         yearCorrection = 1;
         monthCorrection = 12;
       }
     }
-
-
-    this.replaceChart();
-  }
-
-  replaceChart(){
-    this.chart.destroy();
     this.createChart();
   }
+
+
+  /**
+   * Display data from start date to end date. For example:
+   * begin: 1-1-2021, end: 1-2-2021
+   * would show all the signed on/created on data for the two days January 1st 2021 through January 2nd 2021, 
+   * including no-enter days.
+   * no-enter days are sundays, holidays, etc. where no packages will be entered or signed.
+   * @param begin date to start displaying data on
+   * @param end date to stop displaying data on
+   */
+  // begin and end date variables to maintain custom value changes
+  beginCDate: string;
+  endCDate: string;
+  applyCustomDates(){
+    // set filter application and prep chart for use
+    this.currentChartTimeRange = this.applyCustomDates;
+    clearChartXY();
+
+    let currDate = new Date(this.beginCDate);
+    let endDate = new Date(this.endCDate);
+    // update currDateStr
+    let currDateStr = currDate.toDateString();
+    // check that currDate is before endDate
+    if (currDate.toISOString() < endDate.toISOString()){
+
+      // update display data for every day between currDate and endDate
+      while (currDate.toISOString() <= endDate.toISOString()){
+
+  
+        // add to labels
+        labelsG.push(currDateStr);
+
+        // push created/signed date to lists
+        if (currDateStr in createdOnData){
+          chartDisplayDataOne.push(createdOnData[currDateStr].length);
+        } else {
+          chartDisplayDataOne.push(0);
+        }
+        if (currDateStr in signedOnData){
+          chartDisplayDataTwo.push(signedOnData[currDateStr].length)
+        } else {
+          chartDisplayDataTwo.push(0);
+        }
+        // update currDate
+        currDate.setDate(currDate.getDate() + 1);
+      }
+      // handle one day occurrences for custom dates
+    } else if (currDate.toISOString() == endDate.toISOString()){
+      // set (non-existent) custom date to nothing to handle errors
+      if (!(currDateStr in createdOnData)){
+        createdOnData[currDateStr] = [];
+        signedOnData[currDateStr] = [];
+      }
+
+      // store last created/signed dates in temp vars
+      let tmpc = createdOnData[CDLS[CDLS.length-1]];
+      let tmps = signedOnData[SDLS[SDLS.length-1]];
+      // replace with given one day dates
+      createdOnData[CDLS[CDLS.length-1]] = createdOnData[currDateStr];
+      signedOnData[CDLS[CDLS.length-1]] = signedOnData[currDateStr];
+
+      // call one day to handle latest dates
+      this.oneDay();
+
+      // restore original last dates
+      createdOnData[CDLS[CDLS.length-1]] = tmpc;
+      signedOnData[SDLS[SDLS.length-1]] = tmps;
+
+    }
+    
+    // visualize chart
+    this.createChart();
+  }
+
+  
+  /**
+   * Custom date range option
+   * make prettier and figure out why signature data is on for sundays somehow??
+   */
+  async customDates(){
+    // today to maintain max date value
+    let today = new Date().toISOString().split('T')[0];
+
+    // alert sheet
+    const alert = await this.alertController.create({
+      cssClass: 'my-custom-class',
+      header: 'Custom Range',
+
+      inputs: [
+        {
+          name: 'begin',
+          type: 'date',
+          min: '2020-01-01',
+          max: today,
+          label: 'Begin',
+          value: this.beginCDate
+        },
+        {
+          name: 'end',
+          type: 'date',
+          min: '2020-01-01',
+          max: today,
+          label: 'End',
+          value: this.endCDate
+        }
+      ],
+      buttons: [
+        {
+          text: 'Cancel'
+        },
+        {
+          text: 'Ok',
+          // set current begin and end date values and call to display data
+          handler: (inputs) => {
+            // grab custom dates from input and update display
+            this.beginCDate = inputs["begin"];
+            this.endCDate = inputs["end"];    
+            this.applyCustomDates();
+          }
+        }, 
+      ]
+    });
+
+    await alert.present();
+  
+  }
+
+  /**
+   * display ion-alert for adding an annotation and pass the data to the necessary methods.
+   */
+  async addAnnotation(){
+    let today = new Date().toISOString().split('T')[0];
+
+    const alert = await this.alertController.create({
+      cssClass: 'my-custom-class',
+      header: 'Add Annotation',
+
+      inputs: [
+        {
+          name: 'begin',
+          type: 'date',
+          min: '2020-01-01',
+          max: today,
+          label: 'Begin',
+          value: this.beginCDate
+        },
+        {
+          name: 'end',
+          type: 'date',
+          min: '2020-01-01',
+          max: today,
+          label: 'End',
+          value: this.endCDate
+        },
+        {
+          name: 'paragraph',
+          type: 'textarea',
+          label: 'Notes',
+          placeholder: 'notes'
+        },
+      ],
+      buttons: [
+        {
+          text: 'Cancel'
+        },
+        {
+          text: 'Ok',
+          // set current begin and end date values and call to display data
+          handler: (inputs) => {
+            // check if annotation was made, if true, add to savedAnnotations and update chart display
+            let aneva = this.setAnnotation(inputs);
+            if (aneva.created){
+              savedAnnotations.push(aneva.eva);
+              this.chart.update();
+            }
+          }
+        }, 
+      ]
+    });
+    await alert.present();
+  }
+
+  /**
+   * Makes an annotation using the given ion-alert data (includes dates and label message data)
+   * @param inputs provided inputs include dates and any label message
+   * @returns an object with either both an annotation and a boolean value to determine if the annotation was made,
+   * or solely a boolean value to notify the calling method that the annotation was never made due to boundary errors
+   */
+  setAnnotation(inputs){
+    // map dates to index values on display
+    let bDate = new Date(inputs["begin"]);
+    bDate.setDate(bDate.getDate() + 1);
+    let eDate = new Date(inputs["end"]);
+    eDate.setDate(eDate.getDate() + 1);
+    let annoteBegin = labelsG.indexOf(bDate.toDateString());
+    let annoteEnd = labelsG.indexOf(eDate.toDateString());
+
+
+    // find the boundaries of an annotation and determine whether they are bad or not
+    let makeAnnote = true;
+    if (annoteBegin < 0) {
+      let results = this.nearestDateIndex(bDate);
+      let nidx = results.nidx;
+      let udv = results.udv;
+      if (nidx < 0){
+        makeAnnote = false;
+      }
+      if (udv){
+        annoteBegin = nidx;
+      } else {
+        annoteBegin = nidx + 1;
+      }            
+    }
+    if (annoteEnd < 0){
+      let results = this.nearestDateIndex(bDate);
+      let nidx = results.nidx;
+      let udv = results.udv;
+      if (nidx < 0){
+        makeAnnote = false;
+      }
+      if (udv){
+        annoteEnd = nidx - 1;
+      } else {
+        annoteEnd = nidx;
+      }
+    }
+    
+    // check to see if making an annotation is viable using the given boundaries
+    if (makeAnnote) {
+      var eventArea: any = {
+        id: bDate.toDateString() + "-" + eDate.toDateString(),
+        type: 'box',
+
+        // scale annotation to graph
+        xMax: annoteBegin-0.5,
+        xMin: annoteEnd+0.5,
+        backgroundColor: 'rgba(255,99,132,0.05)',
+        borderWidth: 1,
+
+        // annotation label to display given information
+        // TODO: this could later be changed to chartjs label annotation, as that would look much nicer
+        // this would require a lot more code though ;-;
+        label: {
+          enabled: false,
+          borderWidth: 0,
+          drawTime: 'afterDatasetsDraw',
+          color: 'black',
+          content: (ctx) => [inputs["paragraph"]],
+          textAlign: 'center'
+        },
+        click: (ctx, event) => {
+          if (event.native.ctrlKey){
+            this.annotationEdit(ctx);
+          }
+        },
+        enter: (ctx, event) => {
+          // anev.element.options.backgroundColor = 'rgba(255,99,132,0.1)';
+          this.toggleLabel(ctx,event);
+        },
+        leave: (ctx, event) => {
+          // ctx.element.options.backgroundColor = 'rgba(255,99,132,0.05)';
+          this.toggleLabel(ctx, event);
+        },
+        
+        // store dates 
+        dates: {
+          begin: bDate.toDateString(),
+          end: eDate.toDateString()
+        }
+      };
+
+      // return created value if annotation was properly created, along with the annotation
+      return {
+        created: true,
+        eva: eventArea
+      }
+    }
+    return {
+      created: false
+    }
+  }
+
+  /**
+   * Scans display data relative to a given date for the nearest feasible date index for annotation boundaries. This is important for
+   * non-displayed dates that should still be able to be entered (sunday to monday should show just monday)
+   * @param date date to scan display data relative to
+   * @returns an object with the index flag of the nearest viable index and a boolean value determining whether the flag
+   * was found or not. Checking for a given number isn't doable as scaling is different for different time-displays, making the
+   * boolean value necessary
+   */
+  nearestDateIndex(date){
+    let upDate = new Date(date);
+    let downDate = new Date(date);
+    let flag = -1;
+    let udf = true;
+    for (let i = 1; i <= 4; i++){
+      upDate.setDate(upDate.getDate() + i);
+      downDate.setDate(downDate.getDate() - i);
+      let upVal = labelsG.indexOf(upDate.toDateString());
+      let downVal = labelsG.indexOf(downDate.toDateString())
+      if (upVal > -1){
+        flag = upVal;
+        break;
+      } else if (downVal > -1){
+        flag = downVal;
+        udf = false;
+        break;
+      }
+    }
+    return {
+      nidx: flag,
+      udv: udf
+    };
+  }
+
+  /**
+   * edit a selected annotation
+   * @param ctx given context of annotation being edited
+   */
+  async annotationEdit(ctx){
+    let today = new Date().toISOString().split('T')[0];
+
+    // get chart and annotation options from chart
+    const AChart = ctx.chart;
+    const annotationOpts = 
+    AChart.options.plugins.annotation.annotations;
+
+    // cycle through annotationOpts find annotation using given annotation id
+    let annotation;
+    for (var val in annotationOpts){
+      if (annotationOpts[val]["id"] === ctx.id){
+        annotation = annotationOpts[val];
+          break;
+      }
+    }
+
+    // get annotation begin and end dates in an ion-alert sheet format (year-month-day)
+    let bDate = new Date(annotation.dates.begin).toISOString().slice(0,10);
+    let eDate = new Date(annotation.dates.end).toISOString().slice(0,10);
+
+    const alert = await this.alertController.create({
+      cssClass: 'my-custom-class',
+      header: 'Edit Annotation',
+      inputs: [
+        {
+          name: 'begin',
+          type: 'date',
+          min: '2020-01-01',
+          max: today,
+          label: 'Begin',
+          value: bDate
+        },
+        {
+          name: 'end',
+          type: 'date',
+          min: '2020-01-01',
+          max: today,
+          label: 'End',
+          value: eDate 
+        },
+        {
+          name: 'paragraph',
+          type: 'textarea',
+          label: 'Notes',
+          placeholder: 'notes',
+          // get previous annotation descriptions
+          value: annotation.label.content
+        },
+      ],
+      buttons: [
+        {
+          text: 'Delete',
+          handler: () => {
+            // remove annotation
+            this.deleteAnnotation(annotation);
+            this.chart.update();
+          }
+        },
+        {
+          text: 'OK',
+          handler: (inputs) => {
+            // remove annotation and replace with edited one
+            this.deleteAnnotation(annotation);
+            // make new annotation with edited attributes
+            let aneva = this.setAnnotation(inputs);
+            // check for creation and update
+            if (aneva.created){
+              savedAnnotations.push(aneva.eva);
+              this.chart.update();
+            }
+          }
+        }, 
+      ]
+    });
+    await alert.present();
+  }
+
+  /**
+   * finds annotation in savedAnnotations by id and removes it
+   * @param annotation annotation to remove
+   */
+  deleteAnnotation(annotation){
+    savedAnnotations.forEach((item, idx) => {
+      if (item["id"] === annotation["id"]) savedAnnotations.splice(idx, 1);
+    });
+  }
+
+  /**
+   * toggleLabel finds the correlating annotation to the given element id, and toggles its given label
+   * @param ctx annotation element id
+   * @param event mouse click event 
+   */
+  toggleLabel(ctx, event){
+    // get current chart
+    const AChart = ctx.chart;
+    //get annotation plugin from chart options
+    const annotationOpts = 
+    AChart.options.plugins.annotation.annotations;
+       
+    // cycle through annotations and find the correct annotation for the given id
+    for (var val in annotationOpts){
+      if (annotationOpts[val]["id"] === ctx.id){
+        // set annotation
+        let annotation = annotationOpts[val];
+        // toggle label visibility
+        annotation.label.enabled = !annotation.label.enabled;
+        // matching label visibility to mouse event:
+        // let position = {
+        //   x: (event.x / ctx.chart.chartArea.width * 500) + '%', 
+        //   y: (event.y / ctx.chart.chartArea.height * 100) + '%'
+        // };
+        
+        // set position of label
+        annotation.label.position = 'start';
+        
+        // update chart and break from loop
+        AChart.update();
+        break;
+      }
+    }
+  }
+  
+
+  /**
+   * Generate chart for two data sets: signed on and created on data
+   */
   createChart() {
-    if(this.chart!=null){
+    let annotationBuffer = [];
+    // check for previously made chart
+    if(this.chart != null){
+      // handle one day filter disabling
+      // required to keep user from using mon-sat filters on a one day chart
+      let odFilter = (<HTMLInputElement> document.getElementById("one-day-filter"));
+      let anOption = (<HTMLInputElement> document.getElementById("annotate-option"));
+      if(this.currentChartTimeRange == this.oneDay){
+        odFilter.disabled = true;
+        anOption.disabled = true;
+      } else {
+        odFilter.disabled = false;
+        anOption.disabled = false;
+
+        // handle scaling changes for annotations
+        for (var val in savedAnnotations){
+          let annotation = savedAnnotations[val];
+          // get begin/end indexes of annotation to scale to current time-display
+          let bIndex = labelsG.indexOf(annotation.dates.begin);
+          let eIndex = labelsG.indexOf(annotation.dates.end);
+
+          // handle cases where user inputs dates between displayed dates 
+          if (bIndex < 0) {
+            let results = this.nearestDateIndex(new Date(annotation.dates.begin));
+            let nidx = results.nidx;
+            let udv = results.udv;
+            if (udv){
+              bIndex = nidx;
+            } else {
+              bIndex = nidx + 1;
+            }            
+          }
+          if (eIndex < 0){
+            let results = this.nearestDateIndex(new Date(annotation.dates.end));
+            let nidx = results.nidx;
+            let udv = results.udv;
+            if (udv){
+              eIndex = nidx - 1;
+            } else {
+              eIndex = nidx;
+            }
+          }
+          annotation.xMin = bIndex-0.5;
+          annotation.xMax = eIndex+0.5;
+        }
+
+        annotationBuffer = savedAnnotations;
+      }
+      htmlChanges();
       this.chart.destroy();
     }
+
+
     this.chart = new Chart(this.barChart.nativeElement, {
+      // variable chart types: bar, line, and scatter
       type: this.chartType,
-      data: {
+
+        data: {
         labels: labelsG,
+
+        // TODO: allow data color changing
         datasets: [
           {
-          label: 'One',
+          label: 'Entered',
           data: chartDisplayDataOne,
-          backgroundColor: 'skyblue', // array should have same number of elements as number of dataset
-          borderColor: 'skyblue',// array should have same number of elements as number of dataset
-          borderWidth: 1
-        }
-        // {
-        //   label: 'Two',
-        //   data: [2.5, 3.8, 5, 6.9, 6.9, 7.5, 10, 17].reverse(),
-        //   backgroundColor: 'skyblue', // array should have same number of elements as number of dataset
-        //   borderColor: 'skyblue',// array should have same number of elements as number of dataset
-        //   borderWidth: 1
-        // } 
+          backgroundColor: 'skyblue', 
+          borderColor: 'skyblue',
+          borderWidth: 3,
+        },
+        {
+          label: 'Signed',
+          data: chartDisplayDataTwo,
+          backgroundColor: 'palegoldenrod', 
+          borderColor: 'palegoldenrod',
+          borderWidth: 3,
+        } 
       ]
       },
       options: {
+        plugins: {
+          // zoom plugin for wheel and drag
+          zoom: {
+            limits: {
+              x: {
+                min: 'original', 
+                max: 'original'
+              },
+            },
+            zoom: {
+              wheel: {
+                enabled: true,
+              },
+              drag: {
+                enabled: true
+              },
+              mode: 'x',
+              // dynamically change high, low, and average display for created/signed data
+              onZoomComplete: startFetch
+            }
+          },
+          annotation: {
+            annotations: annotationBuffer
+          },
+
+          legend: {
+            display: false,
+          },
+
+          
+        },
         responsive: true,
         maintainAspectRatio: false,
         scales: {

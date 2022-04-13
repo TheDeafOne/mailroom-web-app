@@ -4,6 +4,8 @@ ion-content{
 
 ion-item{
     --ion-background-color: white;
+    padding: 0 !important;
+    margin: 0 !important;
 }
 
 ion-card {
@@ -12,6 +14,7 @@ ion-card {
     padding: 0 !important;
 }
 
+
 ion-card-header{
     color: slategrey;
     font-weight: bold;
@@ -19,21 +22,76 @@ ion-card-header{
 
 canvas {
     border: 3px gray;
-    width: 74%;
-}
-.chart-card{
+    width: 68%;
     height:100%;
 }
-.chart-time-container{
+
+.chart {
+    bottom: 10px;
+    width:100%;
+}
+
+.chart-card{
+    height:100%;
+    width:100%;
+}
+
+.filtered-card{
+    height:100%;
+    
+}
+
+
+.chart-manip{
+    display: flex;
+    overflow: hidden;
+}
+// filters
+.chart-filters-wrapper{
+    display:flex;
+    overflow: hidden;
+    float: left;
+    flex-grow: 1;
+}
+.chart-filter{
+    --border-radius: 0px;
+    --background: white;
+    --box-shadow: 0px;
+    padding: 0 !important;
+    margin: 0 !important;
+    height: 100%;
+    float: left;
+}
+
+.chart-option-wrapper{
+    display: flex;
     position: relative;
+    float: right;   
+    margin-right: 25px;  
+}
+
+.chart-option{
+    --border-radius: 0px;
+    --background: white;
+    --box-shadow: 0px;
+    padding: 0 !important;
+    margin: 0 !important;
+    height: 100%;
+    color: black;
+}
+
+.chart-time-container{
+    display:flex;
+    justify-content: center;
     width: 100%;
     overflow: hidden;
 }
 
-.chart-time {
-    position: relative;
-    height: 100%;
-    float: left;
+.chart-card-content{
+    margin-top:0;
+    margin-bottom:0;
+    padding-top:0;
+    padding-bottom:0;
 }
 
 .chart-title{
@@ -41,24 +99,51 @@ canvas {
     float: left;
     margin-right: 10%;
 }
-.chart-use-card{
-    height:100%;
-}
 
-.raw-card{
+// .recipient-filter-group .alert-wrapper{
+//     background-color: red !important;
+// }
+// .recipient-filter-group{
+//     > div {
+//         background: red !important;
+//         color: #fff;
+//         margin-bottom: 10px;
+//     }
+//     .box-range{
+//         background: blue !important;
+//     }
+//     // input.alert-input.box-range{
+//     //     color: red;
+//     // }
+// }
+
+
+// volume display
+.volume-card{
     height: 100%;
 }
 
-.raw-container{
+.volume-container{
     position: relative;
-    width: 100%;
+    display: flex;
+    float: left;
     overflow: hidden;
+    margin-bottom: 10px;
+    margin-top: 0px;
+    width: 100%;
 }
+
+.volume-sub-container{
+    position: relative;
+    width: 50%;
+    height: 100%;
+    float: left;
+}
+
 .raw-div1, .raw-div2, .raw-div3 {
     position: relative;
     width: 30%;
     height: 100%;
     float: left;
-    margin-left: 10px;
+    margin-left: 0px;
 }
-

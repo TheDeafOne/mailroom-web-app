@@ -1,84 +1,173 @@
 <ion-content>
+  
   <ion-grid>
-    <ion-row justify-content-end>
-      <ion-col size="6">
-        
-      <ion-card class="raw-card">
-        <ion-card-header>
-          Package Overview
-        </ion-card-header>
-        <ion-card-content>
-          <div class="raw-container">
-          <div class="raw-div1">
-            <h2>
-              Entered
-            </h2>  
-            <h1 id="entered">
-              420
-            </h1>
-          </div>
+    <ion-row>
+      <ion-col size="5">
+        <div class="volume-card">
+          <ion-card>
+            <ion-card-header>
+              Package Overview
+            </ion-card-header>
 
-          <div class="raw-div2">
-            <h2>
-              Signed
-            </h2>
-            <h1 id="signed">
-              69
-            </h1>
-          </div>
-          
-          <div class="raw-div3">
-            <h2>
-              In System
-            </h2>
-            <h1 id="inSystem">
-              46290
-            </h1>
-          </div>
+            <ion-card-content>
+              <div class="volume-container">
+                <div class="volume-sub-container">
+                  <h4>
+                    Entered
+                  </h4>
+                  <div class="raw-div1">
+                    <h3>
+                      High
+                    </h3>  
+                    <h1 id="chigh"></h1>
+                  </div>
+
+                  <div class="raw-div2">
+                    <h3>
+                      Low
+                    </h3>
+                    <h1 id="clow"></h1>
+                  </div>
+                  
+                  <div class="raw-div3">
+                    <h3>
+                      Average
+                    </h3>
+                    <h1 id="caverage"></h1>
+                  </div>
+                  
+                </div>
+
+
+                <div class="volume-sub-container">
+                  <h4>
+                    Signed
+                  </h4>
+                  <div class="raw-div1">
+                    <h3>
+                      High
+                    </h3>  
+                    <h1 id="shigh"></h1>
+                  </div>
+
+                  <div class="raw-div2">
+                    <h3>
+                      Low
+                    </h3>
+                    <h1 id="slow"></h1>
+                  </div>
+                  
+                  <div class="raw-div3">
+                    <h3>
+                      Average
+                    </h3>
+                    <h1 id="saverage"></h1>
+                  </div>
+                  
+                </div>
+
+
+              </div>
+            </ion-card-content>
+          </ion-card>
         </div>
-        </ion-card-content>
-      </ion-card>
       </ion-col>
       
-      <ion-col size="6">
-        <ion-card class="chart-use-card">
+      
+      <ion-col size="7">
+        <ion-card id="filtered-card" class="filtered-card">
           <ion-card-header>
-            Chart Use Card
+            Filtered Data
           </ion-card-header>
-          
+
           <ion-card-content>
-            
-            <ion-grid>
-              
-              <ion-row>
-                <ion-item lines="none">
-                  <ion-select value="bar" interface="popover" placeholder="bar" (ionChange)="showChartData($event)">
-                    <ion-select-option value="bar">Bar Chart</ion-select-option>
-                    <ion-select-option value="line">Line Chart</ion-select-option>
-                  </ion-select>
-                </ion-item>
-              </ion-row>
-            </ion-grid>
+            <div>
+              <ion-button (click)="excelDataFilter()" fill="clear">
+                <ion-icon name="cloud-download-outline"></ion-icon>                
+              </ion-button>
 
+            </div>
+           
           </ion-card-content>
-
         </ion-card>
       </ion-col>
     </ion-row>
 
     <ion-row>
       <ion-col size="12">
+
+      <div class="chart">
         <ion-card class="chart-card">
 
-          <div>
-            
+          <!-- this is the float parent element -->
+          <div class="chart-manip"> 
 
-            <div class="chart-time-container">
-              <div class="chart-title">
-                <ion-card-header>
-                  Charted
-                </ion-card-header>
+          <!-- this is the first float child element, everything inside is already handled -->
+              <div class="chart-filters-wrapper">
+                <div>
+                  <ion-card-header>
+                    Filters
+                  </ion-card-header>
+                </div>
+
+                <div>
+                  <ion-button class="chart-filter" (click)="dayFilter()" disabled="true" id="one-day-filter">Day</ion-button>
+                </div>
+
+                <div>
+                  <ion-button class="chart-filter" (click)="packageFilter()">Package</ion-button>
+                </div>
+
+                <div>
+                  <ion-button class="chart-filter" (click)="courierFilter()">Courier</ion-button>
+                </div>
+
+                <div>
+                  <ion-button class="chart-filter" (click)="recipientFilter()">Recipient</ion-button>
+                </div>
+                
+                
               </div>
+
+              <div class="chart-option-wrapper">
+
+                <div>
+                  <ion-button class="chart-option" (click)="showTypeOptions($event)">Chart Type</ion-button>
+                </div>
+
+                <div>
+                  <ion-select #chartChange [hidden]="true" value="bar" interface="popover" placeholder="bar" (ionChange)="changeChartType($event)">
+                    <ion-select-option value="bar">Bar Chart</ion-select-option>
+                    <ion-select-option value="line">Line Chart</ion-select-option>
+                  </ion-select>
+                </div>
+
+                <div>
+                  <ion-button class="chart-option" (click)="addAnnotation()" fill="clear" id="annotate-option" disabled="true">
+                    Annotate
+                  </ion-button>
+                </div>
+                
+              </div>
+            
+              
+            </div>
+
+
+
+          <ion-card-content class="chart-card-content">
+            <!-- chart display -->
+              <div class="chart-display">
+                <canvas #barChart></canvas>
+                
+              </div>
+
+              
+            </ion-card-content>
+
+            <!-- chart times -->
+            <div class="chart-time-container">
+                
               <div class="chart-time">
                 <ion-button fill="clear" (click)="oneDay()"> 
                   1d
@@ -91,12 +180,12 @@
               </div>
               
               <div class="chart-time">
-                <ion-button fill="clear" (click)="nMonths(1)">
+                <ion-button fill="clear" (click)="oneMonth()">
                   1m
                 </ion-button>
               </div>
               <div class="chart-time" >
-                <ion-button fill="clear" (click)="nMonths(3)">
+                <ion-button fill="clear" (click)="threeMonths()">
                   3m
                 </ion-button>
               </div>
@@ -105,8 +194,8 @@
                   1y
                 </ion-button>
               </div>
-              <div class="chart-time" (click)="nMonths(12)">
-                <ion-button fill="clear">
+              <div class="chart-time">
+                <ion-button fill="clear" (click)="yearToDate()">
                   ytd
                 </ion-button>
               </div>
@@ -116,19 +205,20 @@
                 </ion-button>
               </div>
               <div class="chart-time">
-                <ion-button fill="clear">
+                <ion-button fill="clear" (click)="customDates()">
                   custom
                 </ion-button>
               </div>
+              
+
+              
+
             </div>
 
-            <ion-card-content>
-              <div class="chart-display">
-                <canvas #barChart></canvas>
-              </div>
-            </ion-card-content>
-          </div>
-        </ion-card>
+          </ion-card>
+        </div>
+  
+         
       </ion-col>
     </ion-row>
   </ion-grid>
